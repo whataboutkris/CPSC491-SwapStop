@@ -1,0 +1,74 @@
+import { Button } from "../components/ui/button";
+import NavBar from "../components/NavBar";
+
+export default function LandingPage() {
+  return (
+    <div className="flex flex-col min-h-screen bg-green-900 text-yellow-400">
+      {/* Navbar */}
+      <NavBar />
+
+      {/* Hero Section */}
+      <section className="flex flex-col items-center justify-center text-center flex-1 px-6 py-20 md:py-32">
+        <h1 className="text-4xl md:text-6xl font-extrabold mb-6 text-yellow-300">
+          SwapStop: Revolutionize Your Trading Experience
+        </h1>
+        <p className="text-lg md:text-2xl mb-8 max-w-2xl">
+          Buy, sell, and trade items securely with AI-driven tools that make online commerce smarter and faster.
+        </p>
+        <div className="flex gap-4">
+          <Button className="bg-yellow-300 text-green-800 font-bold hover:bg-yellow-400">
+            Get Started
+          </Button>
+          <Button className="bg-transparent border border-yellow-300 hover:bg-yellow-300 hover:text-green-800 font-bold">
+            Learn More
+          </Button>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="bg-[#1E3B5A] text-[#FF7900] py-20 px-6">
+        <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+          Why Choose SwapStop?
+        </h2>
+        <div className="grid md:grid-cols-3 gap-10 max-w-6xl mx-auto">
+          <div className="flex flex-col items-center text-center p-6 rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300">
+            <h3 className="text-xl font-semibold mb-2">AI-Powered Trading</h3>
+            <p>
+              Leverage AI to optimize your buying, selling, and trading experience, making smarter deals effortlessly.
+            </p>
+          </div>
+          <div className="flex flex-col items-center text-center p-6 rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300">
+            <h3 className="text-xl font-semibold mb-2">Secure Transactions</h3>
+            <p>
+              SwapStop ensures every trade and transaction is protected with state-of-the-art security protocols.
+            </p>
+          </div>
+          <div className="flex flex-col items-center text-center p-6 rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300">
+            <h3 className="text-xl font-semibold mb-2">Community Driven</h3>
+            <p>
+              Connect with a growing community of buyers, sellers, and traders to discover and exchange valuable items.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Call to Action */}
+      <section className="bg-green-900 text-yellow-300 py-20 px-6 text-center">
+        <h2 className="text-3xl md:text-4xl font-bold mb-6">
+          Ready to start swapping smarter?
+        </h2>
+        <p className="mb-8 max-w-2xl mx-auto">
+          Join SwapStop today and experience a secure, AI-enhanced platform that makes trading easier than ever.
+        </p>
+        <Button className="bg-yellow-300 text-green-800 font-bold hover:bg-yellow-400">
+          Sign Up Now
+        </Button>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-green-900 text-green-200 py-6 text-center">
+        &copy; {new Date().getFullYear()} SwapStop. All rights reserved.
+      </footer>
+    </div>
+  );
+}
