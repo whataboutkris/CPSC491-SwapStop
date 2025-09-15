@@ -1,32 +1,44 @@
 import { Button } from "../components/ui/button";
 import NavBar from "../components/NavBar";
+import logo from "../assets/SwapStop-Logo-Transparent.png"
 
 export default function LandingPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-green-900 text-yellow-400">
+    <div className="flex flex-col min-h-screen bg-[#00244E] text-[#FF7900]">
       {/* Navbar */}
       <NavBar />
 
       {/* Hero Section */}
-      <section className="flex flex-col items-center justify-center text-center flex-1 px-6 py-20 md:py-32">
-        <h1 className="text-4xl md:text-6xl font-extrabold mb-6 text-yellow-300">
-          SwapStop: Revolutionize Your Trading Experience
-        </h1>
-        <p className="text-lg md:text-2xl mb-8 max-w-2xl">
-          Buy, sell, and trade items securely with AI-driven tools that make online commerce smarter and faster.
-        </p>
-        <div className="flex gap-4">
-          <Button className="bg-yellow-300 text-green-800 font-bold hover:bg-yellow-400">
-            Get Started
-          </Button>
-          <Button className="bg-transparent border border-yellow-300 hover:bg-yellow-300 hover:text-green-800 font-bold">
-            Learn More
-          </Button>
-        </div>
-      </section>
+<section className="flex flex-col items-center justify-center text-center flex-1 px-6 py-20 md:py-32">
+  {/* Logo */}
+  <img
+  src={logo}
+  alt="SwapStop Logo"
+  className="h-15 w-auto scale-350 origin-center mb-6 hover:opacity-90 transition-transform"
+/>
+
+  {/* Heading */}
+  <h1 className="mt-20 text-4xl md:text-6xl font-extrabold mb-6 text-[#FF7900]">
+    Revolutionize Your Trading Experience
+  </h1>
+
+  <p className="text-lg md:text-2xl mb-8 max-w-2xl">
+    Buy, sell, and trade items securely with AI-driven tools that make online commerce smarter and faster.
+  </p>
+
+  <div className="flex gap-4">
+    <Button className="bg-yellow-300 text-green-800 font-bold hover:bg-yellow-400">
+      Get Started
+    </Button>
+    <Button className="bg-transparent border border-yellow-300 hover:bg-yellow-300 hover:text-green-800 font-bold">
+      Learn More
+    </Button>
+  </div>
+</section>
+
 
       {/* Features Section */}
-      <section className="bg-[#1E3B5A] text-[#FF7900] py-20 px-6">
+      <section className="bg-[#f3cd47] text-[#00244E] py-20 px-6">
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
           Why Choose SwapStop?
         </h2>
@@ -53,7 +65,7 @@ export default function LandingPage() {
       </section>
 
       {/* Call to Action */}
-      <section className="bg-green-900 text-yellow-300 py-20 px-6 text-center">
+      <section className="bg[#EBFBFF]0 text-[#FF7900] py-20 px-6 text-center">
         <h2 className="text-3xl md:text-4xl font-bold mb-6">
           Ready to start swapping smarter?
         </h2>
@@ -66,7 +78,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-green-900 text-green-200 py-6 text-center">
+      <footer className="bg-[#0F3F8C] text-green-200 py-3 text-center">
         &copy; {new Date().getFullYear()} SwapStop. All rights reserved.
       </footer>
     </div>
