@@ -1,19 +1,47 @@
 import { useState } from "react";
 import NavBar from "../components/NavBar";
 
+// Firebase Components 
+import { registerUser } from "../firebase/auth";
+import { db } from "../firebase/firebase";
+import { doc, setDoc } from "firebase/firestore";
+
 export default function RegisterPage() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
+
     if (password !== confirmPassword) {
       alert("Passwords do not match!");
       return;
     }
-    alert(`Account created for ${username}`);
+
+    try {
+      // 1️⃣ Register user in Firebase Auth
+      const user = await registerUser(email, password);
+
+      // 2️⃣ Add user to Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        username,
+        email: user.email,
+        profilePicUrl: "",
+        rating: 0,
+      });
+
+      alert(`Account created for ${username}!`);
+      // Optional: redirect to login or homepage
+      // navigate("/login"); // if using react-router
+    } catch (error) {
+      // Handle unknown error type
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(errorMessage);
+      alert("Error creating account: " + errorMessage);
+    }
   };
 
   return (

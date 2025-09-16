@@ -1,13 +1,30 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import NavBar from "../components/NavBar";
+
+// Firebase Auth
+import { loginUser } from "../firebase/auth";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert(`Logging in with ${email}`);
+
+    try {
+      // Login user with Firebase Auth
+      const user = await loginUser(email, password);
+      alert(`Welcome back, ${user.email}!`);
+
+      // Redirect to homepage after login
+      navigate("/home");
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(errorMessage);
+      alert("Login failed: " + errorMessage);
+    }
   };
 
   return (
@@ -19,7 +36,7 @@ export default function LoginPage() {
           Login to SwapStop
         </h1>
         <p className="text-lg md:text-xl mb-12 max-w-xl text-center text-gray-300">
-          Welcome back! Log in to manage your listings and connect with the SwapStop community.
+          Welcome back! Please login to access your account and start bartering, buying, and selling.
         </p>
 
         <form
@@ -58,7 +75,7 @@ export default function LoginPage() {
           </button>
 
           <p className="text-center text-gray-300">
-            Don’t have an account?{" "}
+            Don't have an account?{" "}
             <a href="/register" className="underline hover:text-[#526FBA]">
               Register
             </a>
