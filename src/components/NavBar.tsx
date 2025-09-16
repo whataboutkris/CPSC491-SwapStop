@@ -15,7 +15,10 @@ export default function NavBar() {
       </Link>
 
       {/* Navigation Links */}
-      <nav className="hidden md:flex gap-6 text-lg font-medium">
+      <nav className="hidden md:flex gap-6 text-lg font-medium items-center">
+        <Link to="/home" className="hover:text-indigo-300 transition-colors">
+          Home
+        </Link>
         <Link to="/listings" className="hover:text-indigo-300 transition-colors">
           Listings
         </Link>
@@ -29,10 +32,17 @@ export default function NavBar() {
 
       {/* Action Buttons */}
       <div className="flex gap-4">
-        <Button className="bg-white text-indigo-800 hover:bg-gray-100">Sign Up</Button>
-        <Button className="bg-transparent border border-white hover:bg-white hover:text-indigo-800">
-          Login
-        </Button>
+        <Link to="/register">
+          <Button className="bg-white text-indigo-800 hover:bg-gray-100">
+            Sign Up
+          </Button>
+        </Link>
+
+        <Link to="/login">
+          <Button className="bg-transparent border border-white hover:bg-white hover:text-indigo-800">
+            Login
+          </Button>
+        </Link>
       </div>
     </header>
   );
