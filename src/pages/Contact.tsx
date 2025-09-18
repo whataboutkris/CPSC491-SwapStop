@@ -8,7 +8,7 @@ export default function Contact() {
   const [name, setName] = useState("");
   const [emailInput, setEmailInput] = useState("");
 
-  const handleSendMessage = (e) => {
+  const handleSendMessage = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const email = "StopSwap@outlook.com";
     const subject = encodeURIComponent("Message from SwapStop Contact Form");
@@ -106,7 +106,7 @@ export default function Contact() {
             <div>
               <label className="block text-lg mb-2">Message</label>
               <textarea
-                rows="5"
+                rows={5}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 className="w-full p-3 rounded-lg bg-white text-[#00244E] focus:outline-none focus:ring-4 focus:ring-yellow-400"
