@@ -2,8 +2,8 @@ import { useState } from "react";
 import NavBar from "../components/NavBar";
 
 // Firebase Components 
-import { registerUser } from "../firebase/auth";
-import { db } from "../firebase/firebase";
+import { registerUser } from "../firebase/auth.js";
+import { db } from "../firebase/firebase.ts";
 import { doc, setDoc } from "firebase/firestore";
 
 export default function RegisterPage() {
@@ -12,7 +12,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleRegister = async (e) => {
+  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (password !== confirmPassword) {

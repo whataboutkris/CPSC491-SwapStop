@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import NavBar from "../components/NavBar";
 
 // Firebase Auth
-import { loginUser } from "../firebase/auth";
+import { loginUser } from "../firebase/auth.ts";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");

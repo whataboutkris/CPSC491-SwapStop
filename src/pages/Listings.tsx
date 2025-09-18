@@ -3,6 +3,9 @@ import { Button } from "../components/ui/button";
 
 const dummyListings = [
   {
+
+    /*Listings (Dummy for now) */
+
     id: 1,
     title: "Wireless Headphones",
     description: "Noise-cancelling over-ear headphones with 30hr battery life.",
@@ -72,7 +75,7 @@ export default function Listings() {
                     {item.price}
                   </span>
                   <Button
-                    onClick={() => alert(`Viewing ${item.title}`)}
+                    onClick={() => alert(`Viewing ${item.title} (PLACEHOLDER)`)}
                     className="bg-indigo-600 hover:bg-indigo-700 text-white"
                   >
                     View
