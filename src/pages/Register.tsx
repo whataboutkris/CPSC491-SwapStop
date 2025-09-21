@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import NavBar from "../components/NavBar";
 
 // Firebase Components 
 import { registerUser } from "../firebase/auth.js";
-import { db } from "../firebase/firebase.ts";
+import { db } from "../firebase/firebase";
 import { doc, setDoc } from "firebase/firestore";
 
 export default function RegisterPage() {
@@ -11,10 +12,12 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
+  const navigate = useNavigate();
 
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
+  
     if (password !== confirmPassword) {
       alert("Passwords do not match!");
       return;
@@ -22,9 +25,25 @@ export default function RegisterPage() {
 
     try {
       // 1️⃣ Register user in Firebase Auth
+      //debug markers
+      console.log("[register] start");
       const user = await registerUser(email, password);
+      console.log("[register] auth ok", user.uid);
+    
+      alert(`Account created for ${username}!`);
+      setUsername("");
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
+
+      formRef.current?.reset();
+      //console.log("[register] cleared");
+
+      navigate("/home", { replace: true }); 
+      //console.log("[register] navigate issued");
 
       // 2️⃣ Add user to Firestore
+      //setDoc is not occurring-> not going anwhere
       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
         username,
@@ -33,9 +52,6 @@ export default function RegisterPage() {
         rating: 0,
       });
 
-      alert(`Account created for ${username}!`);
-      // Optional: redirect to login or homepage
-      // navigate("/login"); // if using react-router
     } catch (error) {
       // Handle unknown error type
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -57,13 +73,16 @@ export default function RegisterPage() {
         </p>
 
         <form
+          ref = {formRef}
           onSubmit={handleRegister}
+          autoComplete="off"
           className="w-full max-w-md bg-[#2C3E70] p-8 rounded-xl shadow-lg space-y-6"
         >
           <div>
             <label className="block text-lg mb-2 text-gray-200">Username</label>
             <input
               type="text"
+              autoComplete="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Choose a username"
@@ -76,6 +95,7 @@ export default function RegisterPage() {
             <label className="block text-lg mb-2 text-gray-200">Email</label>
             <input
               type="email"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"
@@ -88,6 +108,7 @@ export default function RegisterPage() {
             <label className="block text-lg mb-2 text-gray-200">Password</label>
             <input
               type="password"
+              autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
@@ -100,6 +121,7 @@ export default function RegisterPage() {
             <label className="block text-lg mb-2 text-gray-200">Confirm Password</label>
             <input
               type="password"
+              autoComplete="new-password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Confirm your password"
