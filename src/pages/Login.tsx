@@ -40,6 +40,7 @@ export default function LoginPage() {
         </p>
 
         <form
+        data-testid="login-form"
           onSubmit={handleLogin}
           className="w-full max-w-md bg-[#2C3E70] p-8 rounded-xl shadow-lg space-y-6"
         >
