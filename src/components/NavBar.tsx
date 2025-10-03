@@ -10,7 +10,7 @@ import { db } from "../firebase/firebase";
 export default function NavBar() {
   const [user, setUser] = useState<User | null>(null);
   const [username, setUsername] = useState<string | null>(null);
-  const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
+  const [profilePicUrl, setProfilePicUrl] = useState<string | undefined>(undefined);
 
   const navigate = useNavigate();
 
@@ -35,7 +35,7 @@ export default function NavBar() {
         }
       } else {
         setUsername(null);
-        setProfilePicUrl(null);
+        setProfilePicUrl(undefined);
       }
     });
 
@@ -48,7 +48,7 @@ export default function NavBar() {
       await signOut(auth);
       setUser(null); // clear local state
       setUsername(null);
-      setProfilePicUrl(null);
+      setProfilePicUrl(undefined);
       navigate("/login"); // redirect to login page
     } catch (error) {
       console.error("Logout failed:", error);
