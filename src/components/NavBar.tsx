@@ -4,16 +4,41 @@ import logo from "../assets/SwapStop-Logo-Transparent.png";
 import { useEffect, useState } from "react";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import type { User } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebase/firebase";
 
 export default function NavBar() {
   const [user, setUser] = useState<User | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
+  const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
+
   const navigate = useNavigate();
 
   useEffect(() => {
     const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
+
+      if (currentUser) {
+        try {
+          const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+          if (userDoc.exists()) {
+            const data = userDoc.data();
+            setUsername(data.username || null);
+            setProfilePicUrl(
+              data.profilePicUrl ||
+                "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541"
+            );
+          }
+        } catch (error) {
+          console.error("Failed to fetch user data from Firestore:", error);
+        }
+      } else {
+        setUsername(null);
+        setProfilePicUrl(null);
+      }
     });
+
     return () => unsubscribe();
   }, []);
 
@@ -22,6 +47,8 @@ export default function NavBar() {
     try {
       await signOut(auth);
       setUser(null); // clear local state
+      setUsername(null);
+      setProfilePicUrl(null);
       navigate("/login"); // redirect to login page
     } catch (error) {
       console.error("Logout failed:", error);
@@ -76,26 +103,26 @@ export default function NavBar() {
           </>
         ) : (
           <>
-          <Link
-            to={`/user/${user.uid}`}
-            className="flex items-center gap-2 hover:text-indigo-300 transition-colors cursor-pointer"
-          >
-            <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center font-semibold text-white uppercase">
-              {user.displayName
-                ? user.displayName.charAt(0)
-                : user.email?.charAt(0) || "U"}
-            </div>
-            <span>{user.displayName || user.email}</span>
-          </Link>
+            <Link
+              to={`/user/${user.uid}`}
+              className="flex items-center gap-2 hover:text-indigo-300 transition-colors cursor-pointer"
+            >
+              <img
+                src={profilePicUrl || undefined}
+                alt={username || user.email}
+                className="w-8 h-8 rounded-full object-cover border"
+              />
+              <span>{username || user.email}</span>
+            </Link>
 
-          {/* Logout Button */}
-          <Button
+            {/* Logout Button */}
+            <Button
               onClick={handleLogout}
               className="bg-red-500 hover:bg-red-600 text-white"
-          >
-            Logout
-          </Button>
-        </>
+            >
+              Logout
+            </Button>
+          </>
         )}
       </div>
     </header>

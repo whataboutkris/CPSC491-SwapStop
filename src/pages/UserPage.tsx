@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate} from "react-router-dom";
 import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import { getAuth } from "firebase/auth";
@@ -24,6 +24,9 @@ export default function UserPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const navigate = useNavigate();
+
 
   const auth = getAuth();
   const currentUser = auth.currentUser;
@@ -75,6 +78,12 @@ export default function UserPage() {
 
   return (
     <div className="max-w-3xl mx-auto p-6">
+      <button
+        onClick={() => navigate("/home")}
+        className="mb-6 px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+      >
+        Back to Home
+      </button>
       {/* Profile Section */}
       <div className="flex items-center space-x-4">
         <img

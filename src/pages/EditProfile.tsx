@@ -3,10 +3,15 @@ import { getAuth } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 
+import { useNavigate } from "react-router-dom";
+
+
 export default function EditProfile() {
   const auth = getAuth();
+  const navigate = useNavigate();
   const currentUser = auth.currentUser;
   const uid = currentUser?.uid;
+
 
   const [username, setUsername] = useState("");
   const [profilePicUrl, setProfilePicUrl] = useState("");
@@ -119,8 +124,21 @@ export default function EditProfile() {
         {saving ? "Saving..." : "Save Profile"}
       </button>
 
+      {/* Back to Profile button */}
+      {uid && (
+        <button
+          onClick={() => navigate(`/user/${uid}`)}
+          className="w-full mt-4 py-2 rounded text-white font-semibold bg-gray-600 hover:bg-gray-700"
+        >
+          Back to Profile
+        </button>
+      )}
+
       {success && <p className="mt-4 text-green-600">Profile saved successfully!</p>}
       {error && <p className="mt-4 text-red-600">{error}</p>}
     </div>
+
+
+
   );
 }
