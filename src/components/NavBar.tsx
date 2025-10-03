@@ -9,7 +9,7 @@ import { db } from "../firebase/firebase";
 
 export default function NavBar() {
   const [user, setUser] = useState<User | null>(null);
-  const [username, setUsername] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | undefined>(undefined);
   const [profilePicUrl, setProfilePicUrl] = useState<string | undefined>(undefined);
 
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ export default function NavBar() {
           const userDoc = await getDoc(doc(db, "users", currentUser.uid));
           if (userDoc.exists()) {
             const data = userDoc.data();
-            setUsername(data.username || null);
+            setUsername(data.username || undefined);
             setProfilePicUrl(
               data.profilePicUrl ||
                 "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541"
@@ -34,7 +34,7 @@ export default function NavBar() {
           console.error("Failed to fetch user data from Firestore:", error);
         }
       } else {
-        setUsername(null);
+        setUsername(undefined);
         setProfilePicUrl(undefined);
       }
     });
@@ -47,7 +47,7 @@ export default function NavBar() {
     try {
       await signOut(auth);
       setUser(null); // clear local state
-      setUsername(null);
+      setUsername(undefined);
       setProfilePicUrl(undefined);
       navigate("/login"); // redirect to login page
     } catch (error) {
@@ -109,10 +109,10 @@ export default function NavBar() {
             >
               <img
                 src={profilePicUrl}
-                alt={username || user.email}
+                alt={username ?? user.email ?? "User"}
                 className="w-8 h-8 rounded-full object-cover border"
               />
-              <span>{username || user.email}</span>
+              <span>{username ?? user.email ?? "User"}</span>
             </Link>
 
             {/* Logout Button */}
