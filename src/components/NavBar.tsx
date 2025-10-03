@@ -3,9 +3,10 @@ import { Button } from "./ui/button";
 import logo from "../assets/SwapStop-Logo-Transparent.png";
 import { useEffect, useState } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import type { User } from "firebase/auth";
 
 export default function NavBar() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const auth = getAuth();

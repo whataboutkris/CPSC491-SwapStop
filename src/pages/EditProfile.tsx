@@ -25,7 +25,7 @@ export default function EditProfile() {
     async function fetchProfile() {
       setLoading(true);
       try {
-        const userDocRef = doc(db, "users", uid);
+        const userDocRef = doc(db, "users", uid!);
         const userDocSnap = await getDoc(userDocRef);
         if (userDocSnap.exists()) {
           const data = userDocSnap.data();
