@@ -1,12 +1,13 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import logo from "../assets/SwapStop-Logo-Transparent.png";
 import { useEffect, useState } from "react";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import type { User } from "firebase/auth";
 
 export default function NavBar() {
   const [user, setUser] = useState<User | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const auth = getAuth();
@@ -15,6 +16,17 @@ export default function NavBar() {
     });
     return () => unsubscribe();
   }, []);
+
+  const handleLogout = async () => {
+    const auth = getAuth();
+    try {
+      await signOut(auth);
+      setUser(null); // clear local state
+      navigate("/login"); // redirect to login page
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   return (
     <header className="flex justify-between items-center px-6 py-4 bg-[#0F3F8C] text-white shadow-md">
@@ -63,6 +75,7 @@ export default function NavBar() {
             </Link>
           </>
         ) : (
+          <>
           <Link
             to={`/user/${user.uid}`}
             className="flex items-center gap-2 hover:text-indigo-300 transition-colors cursor-pointer"
@@ -74,6 +87,15 @@ export default function NavBar() {
             </div>
             <span>{user.displayName || user.email}</span>
           </Link>
+
+          {/* Logout Button */}
+          <Button
+              onClick={handleLogout}
+              className="bg-red-500 hover:bg-red-600 text-white"
+          >
+            Logout
+          </Button>
+        </>
         )}
       </div>
     </header>

@@ -53,7 +53,10 @@ export default function UserPage() {
         const listingsQuery = query(collection(db, "listings"), where("ownerId", "==", userId));
         const listingsSnap = await getDocs(listingsQuery);
         setListings(
-          listingsSnap.docs.map((doc) => ({ id: doc.id, ...(doc.data() as Listing) }))
+          listingsSnap.docs.map((doc) => {
+            const data = doc.data() as Omit<Listing, "id">; // ignore "id" from data
+            return { id: doc.id, ...data };
+          })
         );
       } catch (error) {
         console.error("Error fetching user data:", error);
