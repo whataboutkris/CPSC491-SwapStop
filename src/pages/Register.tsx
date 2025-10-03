@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import NavBar from "../components/NavBar";
 
 // Firebase Components 
-import { registerUser } from "../firebase/auth.js";
+import { registerUser } from "../firebase/auth.ts";
 import { db } from "../firebase/firebase";
 import { doc, setDoc } from "firebase/firestore";
 
