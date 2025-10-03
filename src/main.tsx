@@ -9,6 +9,8 @@ import Contact from "./pages/Contact";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import UserPage from "./pages/UserPage";
+import AddListing from "./pages/AddListing";
+import EditProfile from "./pages/EditProfile";
 
 
 import "./index.css";
@@ -25,6 +27,8 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <Route path="/login" element={<Login/>} />
         <Route path="/register" element={<Register/>} />
         <Route path="/user/:userId" element={<UserPage />} />
+        <Route path="/add-listing" element={<AddListing />} />
+        <Route path="/edit-profile" element={<EditProfile />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>

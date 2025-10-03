@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../firebase/firebase";
+import { getAuth } from "firebase/auth";
 
 interface UserProfile {
   username: string;
@@ -22,47 +23,59 @@ export default function UserPage() {
   const { userId } = useParams<{ userId: string }>();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const auth = getAuth();
+  const currentUser = auth.currentUser;
 
   useEffect(() => {
     if (!userId) return;
 
     const fetchUser = async () => {
-      const userRef = doc(db, "users", userId);
-      const userSnap = await getDoc(userRef);
+      setLoading(true);
+      try {
+        const userRef = doc(db, "users", userId);
+        const userSnap = await getDoc(userRef);
 
-      if (userSnap.exists()) {
-        const data = userSnap.data();
-        setProfile({
-          username: data.username || "Unnamed",
-          profilePicUrl: data.profilePicUrl || "",
-          description: data.description || "",
-          email: data.email,
-          rating: data.rating
-        });
+        if (userSnap.exists()) {
+          const data = userSnap.data();
+          setProfile({
+            username: data.username || "Unnamed",
+            profilePicUrl:
+              data.profilePicUrl ||
+              "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541",
+            description: data.description || "",
+            email: data.email,
+            rating: data.rating,
+          });
+        }
+
+        const listingsQuery = query(collection(db, "listings"), where("ownerId", "==", userId));
+        const listingsSnap = await getDocs(listingsQuery);
+        setListings(
+          listingsSnap.docs.map((doc) => ({ id: doc.id, ...(doc.data() as Listing) }))
+        );
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      } finally {
+        setLoading(false);
       }
-
-      const listingsQuery = query(
-        collection(db, "listings"),
-        where("ownerId", "==", userId)
-      );
-      const listingsSnap = await getDocs(listingsQuery);
-      setListings(listingsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Listing[]);
     };
 
     fetchUser();
   }, [userId]);
 
-  if (!profile) return <div className="p-8 text-center">Loading...</div>;
+  if (loading) return <div className="p-8 text-center">Loading...</div>;
+  if (!profile) return <div className="p-8 text-center">User not found.</div>;
+
+  const isCurrentUser = currentUser?.uid === userId;
 
   return (
     <div className="max-w-3xl mx-auto p-6">
       {/* Profile Section */}
       <div className="flex items-center space-x-4">
         <img
-          src={
-            profile.profilePicUrl ||
-            "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541"
-          }
+          src={profile.profilePicUrl}
           alt={profile.username}
           className="w-24 h-24 rounded-full border shadow"
         />
@@ -73,6 +86,16 @@ export default function UserPage() {
           {typeof profile.rating === "number" && (
             <p className="text-sm text-yellow-500">⭐ {profile.rating.toFixed(1)} rating</p>
           )}
+
+          {/* Show Edit Profile button if current user */}
+          {isCurrentUser && (
+            <Link
+              to="/edit-profile"
+              className="mt-3 inline-block px-4 py-2 bg-[#FF7900] text-white rounded hover:bg-yellow-500"
+            >
+              Edit Profile
+            </Link>
+          )}
         </div>
       </div>
 
@@ -82,7 +105,7 @@ export default function UserPage() {
         <p className="text-gray-500">No listings found.</p>
       ) : (
         <div className="grid grid-cols-2 gap-4">
-          {listings.map(listing => (
+          {listings.map((listing) => (
             <div key={listing.id} className="border rounded-lg p-4 shadow-sm">
               <img
                 src={listing.imageUrl}
