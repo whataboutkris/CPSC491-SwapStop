@@ -5,7 +5,6 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
     "./src/components/**/*.{js,ts,jsx,tsx}",
     "./src/pages/**/*.{js,ts,jsx,tsx}",
-    // if you keep shadcn/ui in src/components/ui, the glob above already covers it
   ],
   theme: {
     screens: {
