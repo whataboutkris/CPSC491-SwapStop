@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import LandingPage from "./pages/LandingPage";
-import Listings from "./pages/Listings";
+import Listings from "./pages/ListingsPage";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Login from "./pages/Login";

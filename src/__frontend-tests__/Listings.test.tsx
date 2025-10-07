@@ -1,7 +1,7 @@
 import { describe, test, expect, beforeEach, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import Listings from "../pages/Listings.tsx";
+import Listings from "../pages/ListingsPage.tsx";
 
 // ----------------------
 // Mock NavBar
