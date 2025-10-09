@@ -4,6 +4,9 @@ import { doc, getDoc, collection, query, where, getDocs } from "firebase/firesto
 import { db } from "../firebase/firebase";
 import { getAuth } from "firebase/auth";
 
+//RETURN TO, PAGE DOES NOT LOAD ANYTHING IF USER IS NOT LOGGED IN
+//WILL MAKE PAGE ROUTE TO lOG IN IF USER IS NOT LOGGED IN
+
 interface UserProfile {
   username: string;
   profilePicUrl: string;
