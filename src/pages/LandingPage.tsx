@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import NavBar from "../components/NavBar";
 import logo from "../assets/SwapStop-Logo-Transparent.png"
@@ -27,12 +28,16 @@ export default function LandingPage() {
   </p>
 
   <div className="flex gap-4">
-    <Button className="bg-yellow-300 text-green-800 font-bold hover:bg-yellow-400">
-      Get Started
-    </Button>
-    <Button className="bg-transparent border border-yellow-300 hover:bg-yellow-300 hover:text-green-800 font-bold">
-      Learn More
-    </Button>
+    <Link to="/register">
+      <Button className="bg-yellow-300 text-green-800 font-bold hover:bg-yellow-400">
+        Get Started
+      </Button>
+    </Link>
+    <Link to="/About">
+      <Button className="bg-transparent border border-yellow-300 hover:bg-yellow-300 hover:text-green-800 font-bold">
+        Learn More
+      </Button>
+    </Link>
   </div>
 </section>
 
@@ -72,9 +77,11 @@ export default function LandingPage() {
         <p className="mb-8 max-w-2xl mx-auto">
           Join SwapStop today and experience a secure, AI-enhanced platform that makes trading easier than ever.
         </p>
-        <Button className="bg-yellow-300 text-green-800 font-bold hover:bg-yellow-400">
-          Sign Up Now
-        </Button>
+        <Link to="/register">
+          <Button className="bg-yellow-300 text-green-800 font-bold hover:bg-yellow-400">
+            Sign Up Now
+          </Button>
+        </Link>
       </section>
 
       {/* Footer */}
