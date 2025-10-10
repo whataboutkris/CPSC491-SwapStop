@@ -3,6 +3,7 @@ import { db, storage } from "../firebase/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { Button } from "./ui/button";
+import { getAuth } from "firebase/auth";
 
 interface ListingFormProps {
   onSuccess?: () => void;
@@ -12,62 +13,65 @@ export default function ListingForm({ onSuccess }: ListingFormProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
-  const [type, setType] = useState("sell"); // "sell" or "trade"
+  const [type, setType] = useState("sell");
   const [brand, setBrand] = useState("");
   const [images, setImages] = useState<FileList | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  const auth = getAuth();
+  const currentUser = auth.currentUser;
 
-    try {
-      let imageUrls: string[] = [];
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!currentUser) {
+    alert("You must be logged in to create a listing.");
+    return;
+  }
+  setLoading(true);
 
-      if (images && images.length > 0) {
-        // Upload all images in parallel
-        const uploadPromises = Array.from(images).map(async (image) => {
-          const storageRef = ref(storage, `listings/${Date.now()}-${image.name}`);
-          console.log("Uploading:", image.name);
-          await uploadBytes(storageRef, image);
-          const url = await getDownloadURL(storageRef);
-          console.log("Uploaded and got URL:", url);
-          return url;
-        });
-
-        imageUrls = await Promise.all(uploadPromises);
-      }
-
-      await addDoc(collection(db, "listings"), {
-        title,
-        description,
-        price,
-        type,
-        brand,
-        images: imageUrls,
-        createdAt: serverTimestamp(),
+  try {
+    let imageUrls: string[] = [];
+    if (images && images.length > 0) {
+      const uploadPromises = Array.from(images).map(async (image) => {
+        const storageRef = ref(storage, `listings/${currentUser.uid}/${Date.now()}-${image.name}`);
+        await uploadBytes(storageRef, image);
+        return await getDownloadURL(storageRef);
       });
-
-      if (onSuccess) onSuccess(); // refresh grid
-
-      alert("✅ Listing created successfully!");
-      setTitle("");
-      setDescription("");
-      setPrice("");
-      setType("sell");
-      setBrand("");
-      setImages(null);
-
-      // Reset file input manually
-      const fileInput = document.querySelector<HTMLInputElement>('input[type="file"]');
-      if (fileInput) fileInput.value = "";
-    } catch (error) {
-      console.error("Error adding listing:", error);
-      alert("❌ Failed to create listing. Please try again.");
-    } finally {
-      setLoading(false);
+      imageUrls = await Promise.all(uploadPromises);
     }
-  };
+
+    await addDoc(collection(db, "listings"), {
+      title,
+      description,
+      price: parseFloat(price),
+      type,
+      brand,
+      images: imageUrls,
+      createdAt: serverTimestamp(),
+      ownerId: currentUser.uid,
+      ownerEmail: currentUser.email,
+      ownerName: currentUser.displayName || "Unknown User",
+    });
+
+    alert("✅ Listing created successfully!");
+    setTitle("");
+    setDescription("");
+    setPrice("");
+    setType("sell");
+    setBrand("");
+    setImages(null);
+
+    const fileInput = document.querySelector<HTMLInputElement>('input[type="file"]');
+    if (fileInput) fileInput.value = "";
+    if (onSuccess) onSuccess();
+  } catch (error) {
+    console.error("Error adding listing:", error);
+    alert("❌ Failed to create listing. Check console for details.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <form
