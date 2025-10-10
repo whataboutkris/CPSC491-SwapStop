@@ -4,7 +4,7 @@ import { db } from "../firebase/firebase";
 import ListingForm from "../components/ListingForm";
 import Navbar from "../components/NavBar";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
-import { Link } from "react-router-dom"; // added for username links
+import { Link } from "react-router-dom";
 
 interface Listing {
   id: string;
@@ -13,7 +13,7 @@ interface Listing {
   price: string;
   images: string[];
   type: string;
-  trade?: boolean; // trade or sell
+  trade?: boolean; // for later usage 
   brand: string;
   ownerId: string;
 }
@@ -23,10 +23,10 @@ export default function ListingsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
 
-  // Map to store owner info keyed by UID
+  // Store user UID 
   const [ownerMap, setOwnerMap] = useState<Record<string, { username: string; profilePicUrl: string }>>({});
 
-  // 🔹 Fetch listings from Firestore and auto-refresh
+  // Pulls all the listing info from user database
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "listings"), (snapshot) => {
       setListings(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Listing[]);
@@ -34,7 +34,7 @@ export default function ListingsPage() {
     return () => unsubscribe();
   }, []);
 
-  // 🔹 Fetch owner info for listings
+  // Get the owner info from the db
   useEffect(() => {
     listings.forEach(async (listing) => {
       if (listing.ownerId && !ownerMap[listing.ownerId]) {
@@ -55,7 +55,7 @@ export default function ListingsPage() {
     });
   }, [listings, ownerMap]);
 
-  // 🔹 Delete listing
+  // Able to delete
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this listing?")) {
       await deleteDoc(doc(db, "listings", id));
@@ -63,7 +63,7 @@ export default function ListingsPage() {
     }
   };
 
-  // 🔹 Edit listing
+  //  edit
   const handleEdit = async () => {
     if (!selectedListing) return;
     const updatedTitle = prompt("Enter new title:", selectedListing.title);

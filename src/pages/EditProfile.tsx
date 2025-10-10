@@ -30,7 +30,8 @@ export default function EditProfile() {
     async function fetchProfile() {
       setLoading(true);
       try {
-        const userDocRef = doc(db, "users", uid);
+       
+        const userDocRef = doc(db, "users", uid!);  //
         const userDocSnap = await getDoc(userDocRef);
         if (userDocSnap.exists()) {
           const data = userDocSnap.data();
@@ -50,7 +51,7 @@ export default function EditProfile() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
-      setProfilePicUrl(URL.createObjectURL(e.target.files[0])); // preview
+      setProfilePicUrl(URL.createObjectURL(e.target.files[0]));
     }
   };
 
@@ -69,8 +70,6 @@ export default function EditProfile() {
 
     try {
       let uploadedUrl = profilePicUrl;
-
-      // Upload file if user selected one
       if (file) {
         const storageRef = ref(storage, `users/${uid}/profilePic.jpg`);
         await uploadBytes(storageRef, file);

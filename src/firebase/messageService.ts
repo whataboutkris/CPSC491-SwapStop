@@ -11,12 +11,12 @@ import {
   getDoc,
 } from "firebase/firestore";
 
-// Helper to generate a unique chat ID for two users
+// Might update later to not always create a UID for each msg as it might lag our system.
 export const getChatId = (uid1: string, uid2: string) => {
   return [uid1, uid2].sort().join("_");
 };
 
-// Send a message
+// Helps to send msg
 export const sendMessage = async (
   senderId: string,
   receiverId: string,
@@ -25,7 +25,7 @@ export const sendMessage = async (
   const chatId = getChatId(senderId, receiverId);
   const chatRef = doc(db, "chats", chatId);
 
-  // Ensure chat doc exists
+ 
   const chatSnap = await getDoc(chatRef);
   if (!chatSnap.exists()) {
     await setDoc(chatRef, {
@@ -34,7 +34,7 @@ export const sendMessage = async (
     });
   }
 
-  // Add message to messages subcollection
+  // Adds message to "Messages" and saves them under unique UID, might change it though
   const messagesRef = collection(db, "chats", chatId, "messages");
   await addDoc(messagesRef, {
     senderId,
@@ -44,7 +44,7 @@ export const sendMessage = async (
   });
 };
 
-// Listen for messages in real-time
+// Currently working to make this work in real time however need to create a token system or route in order for the msg to be pulled and possibly add a time stamp to create a realtime process. 
 export const listenForMessages = (
   chatId: string,
   callback: (messages: any[]) => void
