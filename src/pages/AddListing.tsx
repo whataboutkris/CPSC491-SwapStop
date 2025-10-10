@@ -1,4 +1,3 @@
-// AddListing.tsx
 import { useState } from "react";
 import { getAuth } from "firebase/auth";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
