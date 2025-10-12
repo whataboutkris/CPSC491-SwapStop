@@ -1,46 +1,50 @@
 import { Link } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import NavBar from "../components/NavBar";
-import logo from "../assets/SwapStop-Logo-Transparent.png"
+import logo from "../assets/SwapStop-Logo-Transparent.png";
+import { useState } from "react";
+import VirtualAssistant from "../components/VirtualAssistant"; 
+import { MessageCircle } from "lucide-react"; 
 
 export default function LandingPage() {
+  const [showAssistant, setShowAssistant] = useState(false);
+
   return (
-    <div className="flex flex-col min-h-screen bg-[#00244E] text-[#FF7900]">
+    <div className="flex flex-col min-h-screen bg-[#00244E] text-[#FF7900] relative">
       {/* Navbar */}
       <NavBar />
 
       {/* Hero Section */}
-<section className="flex flex-col items-center justify-center text-center flex-1 px-6 py-20 md:py-32">
-  {/* Logo */}
-  <img
-  src={logo}
-  alt="SwapStop Logo"
-  className="h-15 w-auto scale-350 origin-center mb-6 hover:opacity-90 transition-transform"
-/>
+      <section className="flex flex-col items-center justify-center text-center flex-1 px-6 py-20 md:py-32">
+        {/* Logo */}
+        <img
+          src={logo}
+          alt="SwapStop Logo"
+          className="h-15 w-auto scale-350 origin-center mb-6 hover:opacity-90 transition-transform"
+        />
 
-  {/* Heading */}
-  <h1 className="mt-20 text-4xl md:text-6xl font-extrabold mb-6 text-[#FF7900]">
-    Revolutionize Your Trading Experience
-  </h1>
+        {/* Heading */}
+        <h1 className="mt-20 text-4xl md:text-6xl font-extrabold mb-6 text-[#FF7900]">
+          Revolutionize Your Trading Experience
+        </h1>
 
-  <p className="text-lg md:text-2xl mb-8 max-w-2xl">
-    Buy, sell, and trade items securely with AI-driven tools that make online commerce smarter and faster.
-  </p>
+        <p className="text-lg md:text-2xl mb-8 max-w-2xl">
+          Buy, sell, and trade items securely with AI-driven tools that make online commerce smarter and faster.
+        </p>
 
-  <div className="flex gap-4">
-    <Link to="/register">
-      <Button className="bg-yellow-300 text-green-800 font-bold hover:bg-yellow-400">
-        Get Started
-      </Button>
-    </Link>
-    <Link to="/About">
-      <Button className="bg-transparent border border-yellow-300 hover:bg-yellow-300 hover:text-green-800 font-bold">
-        Learn More
-      </Button>
-    </Link>
-  </div>
-</section>
-
+        <div className="flex gap-4">
+          <Link to="/register">
+            <Button className="bg-yellow-300 text-green-800 font-bold hover:bg-yellow-400">
+              Get Started
+            </Button>
+          </Link>
+          <Link to="/About">
+            <Button className="bg-transparent border border-yellow-300 hover:bg-yellow-300 hover:text-green-800 font-bold">
+              Learn More
+            </Button>
+          </Link>
+        </div>
+      </section>
 
       {/* Features Section */}
       <section className="bg-[#f3cd47] text-[#00244E] py-20 px-6">
@@ -88,6 +92,21 @@ export default function LandingPage() {
       <footer className="bg-[#0F3F8C] text-green-200 py-3 text-center">
         &copy; {new Date().getFullYear()} SwapStop. All rights reserved.
       </footer>
+
+      {/* Floating AI Assistant Icon */}
+      <button
+        onClick={() => setShowAssistant(!showAssistant)}
+        className="fixed bottom-6 right-6 bg-[#FF7900] hover:bg-[#ffa733] text-white p-4 rounded-full shadow-lg transition-all duration-300"
+      >
+        <MessageCircle size={28} />
+      </button>
+
+      {/* Assistant Popup */}
+      {showAssistant && (
+        <div className="fixed bottom-20 right-6 z-50">
+          <VirtualAssistant />
+        </div>
+      )}
     </div>
   );
 }
