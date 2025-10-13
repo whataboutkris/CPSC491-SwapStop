@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@google/genai": "^1.24.0",
+    "@google/generative-ai": "^0.24.1",
     "@headlessui/react": "^2.2.9",
     "@tailwindcss/vite": "^4.1.13",
     "firebase": "^12.3.0",
