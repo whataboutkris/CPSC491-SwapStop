@@ -6,13 +6,13 @@ import { getStorage } from "firebase/storage";
 //import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyA368pScFS5cAJdca4zG3m3QkG_WXuud1Y",
-  authDomain: "swapstop-804be.firebaseapp.com",
-  projectId: "swapstop-804be",
-  storageBucket: "swapstop-804be.firebasestorage.app",
-  messagingSenderId: "640388135987",
-  appId: "1:640388135987:web:cb5e102fb06ff499e2b746",
-  measurementId: "G-KKPZEPGQQC"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 const app = initializeApp(firebaseConfig);
