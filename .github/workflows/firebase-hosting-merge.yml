@@ -15,13 +15,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Clean build artifacts and caches
       - name: Clean project build artifacts
         run: |
-          rm -rf node_modules dist build .turbo .parcel-cache .next .vite
+          rm -rf node_modules dist build .turbo .parcel-cache .tsbuildinfo .next .vite
           npm cache clean --force
 
-      # Install dependencies and build
+      - name: Type check
+        run: npx tsc --noEmit
+
       - name: Install dependencies and build
         run: npm ci && npm run build
         env: 
