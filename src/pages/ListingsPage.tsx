@@ -1,79 +1,30 @@
-import { useEffect, useState } from "react";
-import { collection, onSnapshot, deleteDoc, doc, updateDoc, getDoc } from "firebase/firestore";
-import { db } from "../firebase/firebase";
+import { useState } from "react";
+import { useListings } from "../hooks/useListings";
 import ListingForm from "../components/ListingForm";
 import Navbar from "../components/NavBar";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
-import { Link } from "react-router-dom";
-
-interface Listing {
-  id: string;
-  title: string;
-  description: string;
-  price: string;
-  images: string[];
-  type: string;
-  trade?: boolean; // for later usage 
-  brand: string;
-  ownerId: string;
-}
 
 export default function ListingsPage() {
-  const [listings, setListings] = useState<Listing[]>([]);
+  const { listings, ownerMap, handleDelete, handleEdit } = useListings();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
+  const [selectedListing, setSelectedListing] = useState<any>(null);
 
-  // Store user UID 
-  const [ownerMap, setOwnerMap] = useState<Record<string, { username: string; profilePicUrl: string }>>({});
-
-  // Pulls all the listing info from user database
-  useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, "listings"), (snapshot) => {
-      setListings(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Listing[]);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  // Get the owner info from the db
-  useEffect(() => {
-    listings.forEach(async (listing) => {
-      if (listing.ownerId && !ownerMap[listing.ownerId]) {
-        const userSnap = await getDoc(doc(db, "users", listing.ownerId));
-        if (userSnap.exists()) {
-          const data = userSnap.data();
-          setOwnerMap((prev) => ({
-            ...prev,
-            [listing.ownerId]: {
-              username: data.username || "Unknown User",
-              profilePicUrl:
-                data.profilePicUrl ||
-                "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png",
-            },
-          }));
-        }
-      }
-    });
-  }, [listings, ownerMap]);
-
-  // Able to delete
-  const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this listing?")) {
-      await deleteDoc(doc(db, "listings", id));
+  const editListing = async () => {
+    if (!selectedListing) return;
+    const updatedTitle = prompt("Enter new title:", selectedListing.title);
+    const updatedPrice = prompt("Enter new price:", selectedListing.price);
+    if (updatedTitle && updatedPrice) {
+      await handleEdit(selectedListing.id, {
+        title: updatedTitle,
+        price: updatedPrice,
+      });
       setSelectedListing(null);
     }
   };
 
-  //  edit
-  const handleEdit = async () => {
-    if (!selectedListing) return;
-    const updatedTitle = prompt("Enter new title:", selectedListing.title);
-    const updatedPrice = prompt("Enter new price:", selectedListing.price);
-
-    if (updatedTitle && updatedPrice) {
-      await updateDoc(doc(db, "listings", selectedListing.id), {
-        title: updatedTitle,
-        price: updatedPrice,
-      });
+  const deleteListing = async (id: string) => {
+    if (confirm("Are you sure you want to delete this listing?")) {
+      await handleDelete(id);
       setSelectedListing(null);
     }
   };
@@ -82,7 +33,7 @@ export default function ListingsPage() {
     <div className="bg-gray-50 min-h-screen">
       <Navbar />
 
-      {/* Header with Create Button */}
+      {/* Header */}
       <div className="flex justify-between items-center px-8 pt-6">
         <h1 className="text-3xl font-bold text-gray-800">Marketplace</h1>
         <button
@@ -93,84 +44,91 @@ export default function ListingsPage() {
         </button>
       </div>
 
-      {/* Listings Grid */}
+      {/* Grid */}
       <div className="p-6">
         {listings.length === 0 ? (
-          <p className="text-gray-500 text-center mt-10">No listings yet. Be the first to post!</p>
+          <p className="text-gray-500 text-center mt-10">
+            No listings yet. Be the first to post!
+          </p>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mt-4">
-            {listings.map((listing) => (
-              <div
-                key={listing.id}
-                className="bg-white shadow-md rounded-xl p-4 hover:shadow-lg cursor-pointer transition"
-                onClick={() => setSelectedListing(listing)}
-              >
-                {/* Image */}
-                {listing.images && listing.images.length > 0 ? (
-                  <img
-                    src={listing.images[0]}
-                    alt={listing.title}
-                    className="h-48 w-full object-cover rounded-lg mb-3"
-                  />
-                ) : (
-                  <div className="h-48 w-full bg-gray-200 rounded-lg mb-3 flex items-center justify-center text-gray-500">
-                    No Image
+            {listings.map((listing) => {
+              const owner = ownerMap[listing.ownerId] || {
+                username: "Loading...",
+                profilePicUrl:
+                  "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png",
+              };
+
+              return (
+                <div
+                  key={listing.id}
+                  onClick={() => setSelectedListing(listing)}
+                  className="cursor-pointer bg-white rounded-2xl shadow-md hover:shadow-lg transition p-4"
+                >
+                  {listing.images?.[0] ? (
+                    <img
+                      src={listing.images[0]}
+                      alt={listing.title}
+                      className="h-48 w-full object-cover rounded-xl mb-3"
+                    />
+                  ) : (
+                    <div className="h-48 w-full bg-gray-200 rounded-xl mb-3 flex items-center justify-center text-gray-500">
+                      No Image
+                    </div>
+                  )}
+
+                  <h3 className="text-lg font-semibold">{listing.title}</h3>
+                  <p className="text-gray-600">{listing.brand}</p>
+                  <p className="text-indigo-600 font-bold">${listing.price}</p>
+
+                  <div className="flex items-center mt-2">
+                    <img
+                      src={owner.profilePicUrl}
+                      alt={owner.username}
+                      className="w-6 h-6 rounded-full mr-2"
+                    />
+                    <span className="text-sm text-gray-700">{owner.username}</span>
                   </div>
-                )}
-
-                {/* Title & Description */}
-                <h2 className="text-lg font-semibold">{listing.title}</h2>
-                <p className="text-gray-600 line-clamp-2">{listing.description}</p>
-                <p className="text-indigo-600 font-bold mt-2">${listing.price}</p>
-                {listing.type === "trade" && (
-                  <span className="text-xs text-green-600 font-medium">Available for Trade</span>
-                )}
-
-                {/* Owner info */}
-                <div className="flex items-center mt-2">
-                  <img
-                    src={
-                      ownerMap[listing.ownerId]?.profilePicUrl ||
-                      "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"
-                    }
-                    alt={ownerMap[listing.ownerId]?.username || "Unknown User"}
-                    className="w-8 h-8 rounded-full mr-2"
-                  />
-                  <Link
-                    to={`/user/${listing.ownerId}`}
-                    className="text-blue-500 hover:underline font-medium"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {ownerMap[listing.ownerId]?.username || "Unknown User"}
-                  </Link>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
 
       {/* Create Listing Modal */}
-      <Dialog open={isModalOpen} onClose={() => setIsModalOpen(false)} className="relative z-50">
+      <Dialog
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        className="relative z-50"
+      >
         <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <DialogPanel className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-xl">
-            <DialogTitle className="text-xl font-bold mb-4">Create a New Listing</DialogTitle>
+            <DialogTitle className="text-xl font-bold mb-4">
+              Create a New Listing
+            </DialogTitle>
             <ListingForm onSuccess={() => setIsModalOpen(false)} />
           </DialogPanel>
         </div>
       </Dialog>
 
-      {/* Listing Preview Modal */}
-      <Dialog open={!!selectedListing} onClose={() => setSelectedListing(null)} className="relative z-50">
+      {/* Detail Modal */}
+      <Dialog
+        open={!!selectedListing}
+        onClose={() => setSelectedListing(null)}
+        className="relative z-50"
+      >
         <div className="fixed inset-0 bg-black/50" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <DialogPanel className="bg-white rounded-2xl p-6 max-w-xl w-full shadow-xl">
             {selectedListing && (
               <>
-                <DialogTitle className="text-2xl font-bold mb-3">{selectedListing.title}</DialogTitle>
+                <DialogTitle className="text-2xl font-bold mb-3">
+                  {selectedListing.title}
+                </DialogTitle>
 
-                {selectedListing.images && selectedListing.images.length > 0 ? (
+                {selectedListing.images?.[0] ? (
                   <img
                     src={selectedListing.images[0]}
                     alt={selectedListing.title}
@@ -182,42 +140,32 @@ export default function ListingsPage() {
                   </div>
                 )}
 
-                <p className="text-gray-700 mb-2">{selectedListing.description}</p>
-                <p className="text-indigo-600 font-semibold text-lg mb-2">${selectedListing.price}</p>
+                <p className="text-gray-700 mb-2">
+                  {selectedListing.description}
+                </p>
+                <p className="text-indigo-600 font-semibold text-lg mb-2">
+                  ${selectedListing.price}
+                </p>
                 {selectedListing.type === "trade" && (
-                  <p className="text-green-600 font-medium">Available for Trade</p>
+                  <p className="text-green-600 font-medium">
+                    Available for Trade
+                  </p>
                 )}
                 {selectedListing.brand && (
-                  <p className="text-gray-500 text-sm mt-1">Brand: {selectedListing.brand}</p>
+                  <p className="text-gray-500 text-sm mt-1">
+                    Brand: {selectedListing.brand}
+                  </p>
                 )}
-
-                {/* Owner info */}
-                <div className="flex items-center mt-2 mb-4">
-                  <img
-                    src={
-                      ownerMap[selectedListing.ownerId]?.profilePicUrl ||
-                      "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png"
-                    }
-                    alt={ownerMap[selectedListing.ownerId]?.username || "Unknown User"}
-                    className="w-10 h-10 rounded-full mr-2"
-                  />
-                  <Link
-                    to={`/user/${selectedListing.ownerId}`}
-                    className="text-blue-500 hover:underline font-medium"
-                  >
-                    {ownerMap[selectedListing.ownerId]?.username || "Unknown User"}
-                  </Link>
-                </div>
 
                 <div className="flex justify-end space-x-3 mt-6">
                   <button
-                    onClick={() => handleEdit()}
+                    onClick={editListing}
                     className="bg-yellow-500 text-white px-4 py-2 rounded-xl hover:bg-yellow-600 transition"
                   >
                     Edit
                   </button>
                   <button
-                    onClick={() => handleDelete(selectedListing.id)}
+                    onClick={() => deleteListing(selectedListing.id)}
                     className="bg-red-600 text-white px-4 py-2 rounded-xl hover:bg-red-700 transition"
                   >
                     Delete
