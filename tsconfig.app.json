@@ -22,7 +22,15 @@
     "noUnusedParameters": true,
     "erasableSyntaxOnly": false,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
+    /* Added config to tell TS to treat src as the root of our imports  */
+    "baseUrl": "src",
+    "paths": {
+      "@hooks/*": ["hooks/*"],
+      "@services/*": ["services/*"],
+      "@components/*": ["components/*"]
+    }
   },
   "include": [
     "src",
