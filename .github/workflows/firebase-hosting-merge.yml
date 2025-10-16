@@ -2,27 +2,59 @@
 # https://github.com/firebase/firebase-tools
 
 name: Deploy to Firebase Hosting on merge
+
 on:
   push:
     branches:
       - main
+
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
+    environment: deploy
+    env:
+      VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+      VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+      VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+      VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
+      VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+      VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
+      VITE_FIREBASE_MEASUREMENT_ID: ${{ secrets.VITE_FIREBASE_MEASUREMENT_ID }}
+
     steps:
       - uses: actions/checkout@v4
-      - run: npm ci && npm run build
-        env: 
-            VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
-            VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
-            VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
-            VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
-            VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
-            VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
-            VITE_FIREBASE_MEASUREMENT_ID: ${{ secrets.VITE_FIREBASE_MEASUREMENT_ID }}
+
+      # 🧪 Debug step: check if env vars are actually available
+      - name: Debug Firebase environment
+        run: |
+          echo "VITE_FIREBASE_API_KEY length: ${#VITE_FIREBASE_API_KEY}"
+          echo "VITE_FIREBASE_AUTH_DOMAIN length: ${#VITE_FIREBASE_AUTH_DOMAIN}"
+          echo "VITE_FIREBASE_PROJECT_ID length: ${#VITE_FIREBASE_PROJECT_ID}"
+          echo "VITE_FIREBASE_STORAGE_BUCKET length: ${#VITE_FIREBASE_STORAGE_BUCKET}"
+          echo "VITE_FIREBASE_MESSAGING_SENDER_ID length: ${#VITE_FIREBASE_MESSAGING_SENDER_ID}"
+          echo "VITE_FIREBASE_APP_ID length: ${#VITE_FIREBASE_APP_ID}"
+          echo "VITE_FIREBASE_MEASUREMENT_ID length: ${#VITE_FIREBASE_MEASUREMENT_ID}"
+
+      # 🧱 Optional: Create .env.production for Vite (helps ensure env vars are picked up)
+      - name: Create .env.production
+        run: |
+          echo "VITE_FIREBASE_API_KEY=${VITE_FIREBASE_API_KEY}" >> .env.production
+          echo "VITE_FIREBASE_AUTH_DOMAIN=${VITE_FIREBASE_AUTH_DOMAIN}" >> .env.production
+          echo "VITE_FIREBASE_PROJECT_ID=${VITE_FIREBASE_PROJECT_ID}" >> .env.production
+          echo "VITE_FIREBASE_STORAGE_BUCKET=${VITE_FIREBASE_STORAGE_BUCKET}" >> .env.production
+          echo "VITE_FIREBASE_MESSAGING_SENDER_ID=${VITE_FIREBASE_MESSAGING_SENDER_ID}" >> .env.production
+          echo "VITE_FIREBASE_APP_ID=${VITE_FIREBASE_APP_ID}" >> .env.production
+          echo "VITE_FIREBASE_MEASUREMENT_ID=${VITE_FIREBASE_MEASUREMENT_ID}" >> .env.production
+
+      # 🏗️ Build your Vite app
+      - name: Build app
+        run: npm ci && npm run build
+
+      # 🚀 Deploy to Firebase Hosting
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SWAPSTOP_804BE }}
           channelId: live
           projectId: swapstop-804be
+
