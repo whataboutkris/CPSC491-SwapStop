@@ -75,6 +75,7 @@ const handleSubmit = async (e: React.FormEvent) => {
 
   return (
     <form
+      data-testid="listing-form" //for test cases
       onSubmit={handleSubmit}
       className="bg-white shadow-md rounded-2xl p-6 space-y-4 max-w-lg mx-auto"
     >
