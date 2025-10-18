@@ -13,7 +13,7 @@ const mockUpdateDoc = vi.fn();
 
 vi.mock("firebase/firestore", () => ({
   collection: vi.fn(),
-  doc: vi.fn((db, path, id) => ({ path, id })),
+  doc: vi.fn((_db, path, id) => ({ path, id })),
   onSnapshot: (...args: any[]) => mockOnSnapshot(...args),
   deleteDoc: (...args: any[]) => mockDeleteDoc(...args),
   updateDoc: (...args: any[]) => mockUpdateDoc(...args),
@@ -77,9 +77,19 @@ const mockListings = [
   },
 ];
 
-const mockUsers = {
-  user1: { exists: () => true, data: () => ({ username: "Alice", profilePicUrl: "" }) },
-  user2: { exists: () => true, data: () => ({ username: "Bob", profilePicUrl: "" }) },
+// ✅ Fix: add type-safe Record for mockUsers
+const mockUsers: Record<
+  string,
+  { exists: () => boolean; data: () => { username: string; profilePicUrl: string } }
+> = {
+  user1: {
+    exists: () => true,
+    data: () => ({ username: "Alice", profilePicUrl: "" }),
+  },
+  user2: {
+    exists: () => true,
+    data: () => ({ username: "Bob", profilePicUrl: "" }),
+  },
 };
 
 // ----------------------
@@ -90,14 +100,15 @@ describe("ListingsPage", () => {
     vi.clearAllMocks();
 
     // Simulate Firestore snapshot and getDoc
-    mockOnSnapshot.mockImplementation((colRef, callback) => {
+    mockOnSnapshot.mockImplementation((_colRef, callback) => {
       callback({
         docs: mockListings.map((l) => ({ id: l.id, data: () => l })),
       });
       return () => {};
     });
 
-    mockGetDoc.mockImplementation(async (docRef) => mockUsers[docRef.id]);
+    // ✅ Fix: type docRef to include 'id: string'
+    mockGetDoc.mockImplementation(async (docRef: { id: string }) => mockUsers[docRef.id]);
   });
 
   test("renders navbar and page heading", () => {
@@ -106,7 +117,6 @@ describe("ListingsPage", () => {
         <ListingsPage />
       </MemoryRouter>
     );
-
     expect(screen.getByTestId("navbar")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Marketplace/i })).toBeInTheDocument();
   });
@@ -135,63 +145,60 @@ describe("ListingsPage", () => {
     });
   });
 
-test("clicking submit on ListingForm calls onSuccess", async () => {
-  render(
-    <MemoryRouter>
-      <ListingsPage />
-    </MemoryRouter>
-  );
+  test("clicking submit on ListingForm calls onSuccess", async () => {
+    render(
+      <MemoryRouter>
+        <ListingsPage />
+      </MemoryRouter>
+    );
 
-  const openModalButton = screen.getByRole("button", { name: /\+ Create Listing/i });
-  fireEvent.click(openModalButton);
+    const openModalButton = screen.getByRole("button", { name: /\+ Create Listing/i });
+    fireEvent.click(openModalButton);
 
-  const modal = await screen.findByRole("dialog");
-  expect(modal).toBeInTheDocument();
-  const modalWithin = within(modal);
+    const modal = await screen.findByRole("dialog");
+    expect(modal).toBeInTheDocument();
 
-  const submitButton = modalWithin.getByTestId("submit-button");
-  expect(submitButton).toBeInTheDocument();
+    const modalWithin = within(modal);
+    const submitButton = modalWithin.getByTestId("submit-button");
+    expect(submitButton).toBeInTheDocument();
 
-  fireEvent.click(submitButton);
-  await waitFor(() => {
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-  });
-  
-});
+    fireEvent.click(submitButton);
 
-test("clicking delete button calls handleDelete and closes modal", async () => {
-  render(
-    <MemoryRouter>
-      <ListingsPage />
-    </MemoryRouter>
-  );
-
-  // Wait for listing to appear
-  await waitFor(() => screen.getByText(/Wireless Headphones/i));
-
-  // Click the listing to open the modal
-  fireEvent.click(screen.getByText(/Wireless Headphones/i));
-
-  // Wait for the modal dialog to appear
-  const modal = await screen.findByRole("dialog");
-  expect(modal).toBeInTheDocument();
-
-  const modalWithin = within(modal);
-
-  // Find the Delete button inside modal
-  const deleteButton = modalWithin.getByRole("button", { name: /Delete/i });
-  expect(deleteButton).toBeInTheDocument();
-
-  // Click Delete → should call mockDeleteDoc
-  fireEvent.click(deleteButton);
-
-  await waitFor(() => {
-    expect(mockDeleteDoc).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
   });
 
-  // Modal should close after deletion
-  await waitFor(() => {
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  test("clicking delete button calls handleDelete and closes modal", async () => {
+    render(
+      <MemoryRouter>
+        <ListingsPage />
+      </MemoryRouter>
+    );
+
+    // Wait for listing to appear
+    await waitFor(() => screen.getByText(/Wireless Headphones/i));
+
+    // Click the listing to open the modal
+    fireEvent.click(screen.getByText(/Wireless Headphones/i));
+
+    // Wait for the modal dialog to appear
+    const modal = await screen.findByRole("dialog");
+    expect(modal).toBeInTheDocument();
+
+    const modalWithin = within(modal);
+    const deleteButton = modalWithin.getByRole("button", { name: /Delete/i });
+    expect(deleteButton).toBeInTheDocument();
+
+    // Click Delete → should call mockDeleteDoc
+    fireEvent.click(deleteButton);
+    await waitFor(() => {
+      expect(mockDeleteDoc).toHaveBeenCalledTimes(1);
+    });
+
+    // Modal should close after deletion
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
   });
-});
 });

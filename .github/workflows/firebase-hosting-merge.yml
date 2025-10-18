@@ -24,7 +24,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # 🧪 Debug step: check if env vars are actually available
       - name: Debug Firebase environment
         run: |
           echo "VITE_FIREBASE_API_KEY length: ${#VITE_FIREBASE_API_KEY}"
@@ -35,7 +34,6 @@ jobs:
           echo "VITE_FIREBASE_APP_ID length: ${#VITE_FIREBASE_APP_ID}"
           echo "VITE_FIREBASE_MEASUREMENT_ID length: ${#VITE_FIREBASE_MEASUREMENT_ID}"
 
-      # 🧱 Optional: Create .env.production for Vite (helps ensure env vars are picked up)
       - name: Create .env.production
         run: |
           echo "VITE_FIREBASE_API_KEY=${VITE_FIREBASE_API_KEY}" >> .env.production

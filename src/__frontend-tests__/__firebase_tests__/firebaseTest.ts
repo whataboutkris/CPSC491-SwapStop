@@ -18,7 +18,7 @@ const db = getFirestore(app);
 
 // ✅ Connect to Firestore emulator for tests
 if (process.env.NODE_ENV === "test") {
-  console.log("⚡ Connecting Firestore to emulator at localhost:5000");
+  console.log("⚡ Connecting Firestore to emulator at localhost:5000q");
   connectFirestoreEmulator(db, "localhost", 5000);
 }
 
