@@ -27,7 +27,7 @@ export default function Contact() {
       <section className="flex flex-col items-center justify-center text-center flex-1 px-6 py-20 md:py-32">
         <img
           src={logo}
-          alt="SwapStop Logo"
+          alt="SwapStop Logo - Hero"
           className="h-20 w-auto mb-6 transition-transform duration-300 hover:scale-105 hover:opacity-90"
         />
         <h1 className="mt-10 text-4xl md:text-6xl font-extrabold mb-6">
@@ -35,7 +35,7 @@ export default function Contact() {
         </h1>
         <p className="text-lg md:text-2xl mb-8 max-w-2xl">
           Have questions, feedback, or need support?  
-          We’d love to hear from you!
+          We would love to hear from you!
         </p>
       </section>
 

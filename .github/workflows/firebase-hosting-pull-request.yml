@@ -2,18 +2,105 @@
 # https://github.com/firebase/firebase-tools
 
 name: Deploy to Firebase Hosting on PR
-on: pull_request
+
+on:
+  pull_request
+
 permissions:
   checks: write
   contents: read
   pull-requests: write
+
 jobs:
   build_and_preview:
+    # Firebase’s fork-protection
     if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
-      - run: npm ci && npm run build
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci
+
+      # ---------- UNIT / COMPONENT TESTS (Vitest) ----------
+      - name: Run unit tests
+        run: npm run test | tee unit-tests.log
+
+      - name: Summary (unit tests passed)
+        if: ${{ success() }}
+        run: |
+          {
+            echo "## ✅ Unit tests passed";
+            echo "";
+            echo "![badge](https://img.shields.io/badge/unit%20tests-passed-brightgreen)";
+            echo "";
+            echo "<details><summary>Last lines of output</summary>";
+            echo "";
+            echo '```text';
+            tail -n 80 unit-tests.log || true
+            echo '```';
+            echo "</details>";
+          } >> $GITHUB_STEP_SUMMARY
+
+      - name: Summary (unit tests failed)
+        if: ${{ failure() }}
+        run: |
+          {
+            echo "## ❌ Unit tests failed";
+            echo "";
+            echo "![badge](https://img.shields.io/badge/unit%20tests-failed-red)";
+            echo "";
+            echo "<details open><summary>Last lines of output</summary>";
+            echo "";
+            echo '```text';
+            tail -n 120 unit-tests.log || true
+            echo '```';
+            echo "</details>";
+          } >> $GITHUB_STEP_SUMMARY
+
+      # If unit tests fail, stop early (prevents bad build/deploy)
+      - name: Stop on unit test failure
+        if: ${{ failure() }}
+        run: exit 1
+
+      # ---------- BUILD ----------
+      - name: Build
+        run: npm run build
+
+      # ---------Run Checks Before Deployment, Fail Build if Checks Fail -----
+      - run: npm ci
+      - run: npm run build
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      # Run E2E against the built app (vite preview)
+      - name: Start preview server
+        run: npm run preview -- --port 5173 &
+
+      - name: Wait for preview
+        run: npx wait-on http://localhost:5173
+
+      - name: Run E2E tests
+        run: npm run e2e
+
+      # upload e2e report
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+          if-no-files-found: ignore
+          retention-days: 7
+
+      # ---------- FIREBASE PREVIEW DEPLOY ----------
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}

@@ -1,3 +1,6 @@
+[![Deploy to Firebase Hosting on PR](https://github.com/whataboutkris/CPSC491-SwapStop/actions/workflows/firebase-hosting-pull-request.yml/badge.svg?branch=main)](https://github.com/OWNER/REPO/actions/workflows/firebase-hosting-pull-request.yml)
+
+
 # SwapStop
 
 SwapStop is a web application built for the **CPSC 491 Senior Capstone Project** by Juan Cisneroes, Bryant Martinez, and Kristian Losenara.  
@@ -143,3 +146,13 @@ The following commands are available in `package.json`:
 5. Create a Pull Request  
 
 ---
+
+
+## Additional Installs
+
+npm i -D vitest @testing-library/react @testing-library/jest-dom @testing-library/user-event jsdom
+
+npm i -D @playwright/test
+
+npx playwright install
+
