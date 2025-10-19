@@ -1,20 +1,14 @@
 import NavBar from "../components/NavBar";
-import logo from "../assets/SwapStop-Logo-Transparent.png";
 import founder1 from "../assets/img1.png";
 import founder2 from "../assets/img1.png";
 
-export default function AboutPage() {
+export default function About() {
   return (
     <div className="flex flex-col min-h-screen bg-[#00244E] text-[#FF7900]">
       <NavBar />
 
       {/* Hero Section */}
       <section className="flex flex-col items-center justify-center text-center flex-1 px-6 py-20 md:py-32">
-        <img
-          src={logo}
-          alt="SwapStop Logo - Hero"
-          className="h-20 w-auto mb-6 transition-transform duration-300 hover:scale-105 hover:opacity-90"
-        />
         <h1 className="mt-10 text-4xl md:text-6xl font-extrabold mb-6">
           About SwapStop
         </h1>

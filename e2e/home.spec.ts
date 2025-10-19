@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-test('Landing renders with correct CTAs', async ({ page }) => {
+test('Home renders with correct CTAs', async ({ page }) => {
   await page.goto('/') 
 
   //  heading
@@ -10,7 +10,7 @@ test('Landing renders with correct CTAs', async ({ page }) => {
 
   // check links have the right hrefs
   await expect(page.getByRole('link', { name: /get started/i })).toHaveAttribute('href', '/register')
-  await expect(page.getByRole('link', { name: /learn more/i })).toHaveAttribute('href', '/About')
+  await expect(page.getByRole('link', { name: /learn more/i })).toHaveAttribute('href', '/about')
 
   // Features section is visible
   await expect(page.getByRole('heading', { name: /why choose swapstop\?/i })).toBeVisible()
@@ -24,6 +24,6 @@ test('Landing renders with correct CTAs', async ({ page }) => {
 test('Learn More link navigates to About', async ({ page }) => {
   await page.goto('/')
   await page.getByRole('link', { name: /learn more/i }).click()
-  await expect(page).toHaveURL(/\/About$/)
+  await expect(page).toHaveURL(/\/about$/)
   await expect(page.getByRole('heading', { name: /about/i })).toBeVisible()
 })

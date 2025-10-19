@@ -107,7 +107,7 @@ export default function NavBar() {
         <Link to="/" className="flex items-center">
           <img
             src={logo}
-            alt="SwapStop NavBar Logo"
+            alt="SwapStop Logo NavBar"
             className="h-12 w-auto hover:opacity-90 transition-opacity"
           />
         </Link>

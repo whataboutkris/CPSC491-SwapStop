@@ -6,7 +6,7 @@ import { useState } from "react";
 import VirtualAssistant from "../components/VirtualAssistant"; 
 import { MessageCircle } from "lucide-react"; 
 
-export default function LandingPage() {
+export default function Home() {
   const [showAssistant, setShowAssistant] = useState(false);
 
   return (
@@ -19,7 +19,7 @@ export default function LandingPage() {
         {/* Logo */}
         <img
           src={logo}
-          alt="SwapStop Logo"
+          alt="SwapStop Logo Hero"
           className="h-15 w-auto scale-350 origin-center mb-6 hover:opacity-90 transition-transform"
         />
 
@@ -38,7 +38,7 @@ export default function LandingPage() {
               Get Started
             </Button>
           </Link>
-          <Link to="/About">
+          <Link to="/about">
             <Button className="bg-transparent border border-yellow-300 hover:bg-yellow-300 hover:text-green-800 font-bold">
               Learn More
             </Button>

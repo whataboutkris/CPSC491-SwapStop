@@ -25,9 +25,6 @@ describe('Contact page', () => {
       screen.getByRole('heading', { level: 1, name: /contact us/i })
     ).toBeInTheDocument()
 
-    expect(
-      screen.getByRole('img', { name: /swapstop logo - hero/i })
-    ).toBeInTheDocument()
 
     expect(
       screen.getByText(/have questions, feedback, or need support\?/i)

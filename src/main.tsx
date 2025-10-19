@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import MessagePage from "./pages/MessagePage";
 import InboxPage from "./pages/InboxPage";
-import LandingPage from "./pages/LandingPage";
+import Home from "./pages/Home";
 import Listings from "./pages/ListingsPage";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
@@ -21,8 +21,8 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/home" element={<LandingPage />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/home" element={<Home />} />
         <Route path="/listings" element={<Listings />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />

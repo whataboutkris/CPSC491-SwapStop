@@ -3,28 +3,28 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { vi, describe, it, expect } from 'vitest'
 
-// Mocks to isolate LandingPage, has import paths
+// Mocks to isolate Home Page, has import paths
 vi.mock('../../components/NavBar', () => ({ default: () => <nav>Nav</nav> }))
 vi.mock('../../components/ui/button', () => ({
   Button: (p: React.ButtonHTMLAttributes<HTMLButtonElement> & { children: React.ReactNode }) => <button {...p} />
 }))
 vi.mock('../../components/VirtualAssistant', () => ({ default: () => <div role="dialog">Assistant</div> }))
 
-import LandingPage from '../pages/LandingPage'
+import Home from '../pages/Home'
 
 const renderPage = () =>
   render(
     <MemoryRouter>
-      <LandingPage />
+      <Home />
     </MemoryRouter>
   )
 
-describe('LandingPage', () => {
+describe('Home', () => {
   it('renders the hero heading + CTAs and footer year', () => {
     renderPage()
     expect(screen.getByRole('heading', { level: 1, name: /revolutionize your trading experience/i })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /get started/i })).toHaveAttribute('href', '/register')
-    expect(screen.getByRole('link', { name: /learn more/i })).toHaveAttribute('href', '/About')
+    expect(screen.getByRole('link', { name: /learn more/i })).toHaveAttribute('href', '/about')
     const year = new Date().getFullYear().toString()
     expect(screen.getByText(new RegExp(`${year}.*SwapStop`, 'i'))).toBeInTheDocument()
   })
