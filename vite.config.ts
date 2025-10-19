@@ -13,5 +13,14 @@ export default defineConfig({
     environment: 'happy-dom',          // simulates a browser environment for React components
     setupFiles: './src/setupTests.ts', // file for test setup (e.g. extending expect with jest-dom)
     css: true,                     // allows importing CSS/Tailwind styles in tests
+
+    exclude: [
+      'e2e/**',
+      'playwright-report/**',
+      'blob-report/**',
+      'node_modules/**',
+      'dist/**',
+      '.{idea,git,cahse,output,temp}/**'
+    ]
   },
 })
