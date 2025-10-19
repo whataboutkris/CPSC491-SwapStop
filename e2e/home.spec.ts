@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/test'
 
+test.beforeEach(async ({ page }) => {
+  page.on('console', m => { if (m.type() === 'error') console.error('[console]', m.text()) })
+  page.on('pageerror', err => console.error('[pageerror]', err.message))
+})
+
 test('Home renders with correct CTAs', async ({ page }) => {
   await page.goto('/') 
 

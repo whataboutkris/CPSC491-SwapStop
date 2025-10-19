@@ -70,22 +70,12 @@ jobs:
         run: exit 1
 
       # ---------- BUILD ----------
-      - name: Build
-        run: npm run build
 
       # ---------Run Checks Before Deployment, Fail Build if Checks Fail -----
-      - run: npm ci
       - run: npm run build
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
-
-      # Run E2E against the built app (vite preview)
-      - name: Start preview server
-        run: npm run preview -- --port 5173 &
-
-      - name: Wait for preview
-        run: npx wait-on http://localhost:5173
 
       - name: Run E2E tests
         run: npm run e2e
@@ -102,6 +92,7 @@ jobs:
 
       # ---------- FIREBASE PREVIEW DEPLOY ----------
       - uses: FirebaseExtended/action-hosting-deploy@v0
+        if: ${{ success() }}
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SWAPSTOP_804BE }}
