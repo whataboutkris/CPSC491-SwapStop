@@ -5,7 +5,11 @@ test.describe('About Page', () => {
     await page.goto('/About')
 
     // Hero
-    await expect(page.getByRole('img', { name: /swapstop logo - hero/i })).toBeVisible()
+    const hero = page
+    .locator('section')
+    .filter({ has: page.getByRole('heading', { level: 1, name: /about swapstop/i }) })
+    
+    await expect(hero.getByRole('img', { name: /swapstop logo/i })).toBeVisible()
     await expect(page.getByRole('heading', { level: 1, name: /about swapstop/i })).toBeVisible()
     await expect(
       page.getByText(/unique e-commerce platform.*second life/i)

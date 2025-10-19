@@ -1,8 +1,5 @@
 {
   "extends": "../tsconfig.json",
-  "compilerOptions": {
-    "types": ["@playwright/test"],   // Playwright globals
-    "noEmit": true
-  },
-  "include": ["./**/*.ts", "./**/*.tsx"]
+  "compilerOptions": { "lib": ["ES2022", "DOM", "DOM.Iterable"] },
+  "include": ["./**/*.ts"]
 }
