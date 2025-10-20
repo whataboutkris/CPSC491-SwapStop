@@ -1,17 +1,23 @@
-import { defineConfig } from 'vitest/config'
-import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
+import { defineConfig } from "vitest/config";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 
-// https://vite.dev/config/
 export default defineConfig({
-  plugins: [
-    tailwindcss(),
-    react()
-  ],
+  plugins: [tailwindcss(), react()],
   test: {
-    globals: true,                 // allows using "describe", "test", etc. without imports
-    environment: 'happy-dom',          // simulates a browser environment for React components
-    setupFiles: './src/setupTests.ts', // file for test setup (e.g. extending expect with jest-dom)
-    css: true,                     // allows importing CSS/Tailwind styles in tests
+    globals: true,
+    environment: "happy-dom",
+    setupFiles: "./src/setupTests.ts",
+    css: true,
+
+    // 👇 Add these:
+    include: [
+      "src/__frontend-tests__/**/*.test.{js,ts,jsx,tsx}",
+      "src/__backend-tests__/**/*.test.{js,ts,jsx,tsx}",
+    ],
+
+    // Optional, helps debug:
+    logHeapUsage: true,
+    pool: "threads",
   },
-})
+});
