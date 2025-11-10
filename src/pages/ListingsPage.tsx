@@ -267,7 +267,7 @@ export default function ListingsPage() {
                   <img
                     src={selectedListing.images[0]}
                     alt={selectedListing.title}
-                    className="h-64 w-full object-cover rounded-xl mb-4"
+                    className="w-full max-h-[500px] object-contain rounded-xl mb-4"
                   />
                 ) : (
                   <div className="h-64 w-full bg-gray-200 rounded-xl mb-4 flex items-center justify-center text-gray-500">
