@@ -7,7 +7,7 @@
  * Parses average price from results.
  */
 
-console.log("🔑 API Key loaded?", !!import.meta.env.VITE_GOOGLE_API_KEY);               //debugging
+console.log("🔑 API Key loaded?", !!import.meta.env.VITE_GOOGLE_API_KEY);
 console.log("🔎 Search Engine ID loaded?", !!import.meta.env.VITE_GOOGLE_SEARCH_ENGINE_ID);
 console.log("VITE_GOOGLE_API_KEY:", import.meta.env.VITE_GOOGLE_API_KEY);
 
@@ -66,20 +66,50 @@ export async function estimatePriceFromImage(imageUrl: string): Promise<{
       return { labels, avgPrice: null, listings: [] };
     }
 
-    // --- Step 1b: Prioritize short text (brand/slogan) ---
-    const shortText = texts.find(t => t.length <= 10); // short text likely brand
-    const topLabel = labels[0] || "item";
-    const mergedQuery = shortText
-      ? `${shortText} (${topLabel})`
-      : texts[0]
-      ? `${texts[0]} (${topLabel})`
-      : topLabel;
+    // --- Step 1b: Smarter keyword extraction ---
+    function buildSmartQuery(labels: string[], texts: string[]): string {
+      const genericWords = [
+        "Electronic device",
+        "Technology",
+        "Gadget",
+        "Product",
+        "Device",
+        "Equipment",
+        "Portable communications device",
+        "Hardware",
+        "Tool",
+        "Machine",
+      ];
 
+      const specificLabels = labels.filter(
+        (label) =>
+          !genericWords.some((word) =>
+            label.toLowerCase().includes(word.toLowerCase())
+          )
+      );
+
+      const possibleBrand =
+        texts.find((t) => /^[A-Z][a-zA-Z]+$/.test(t)) || "";
+      const possibleModel =
+        texts.find((t) => /\b\d{1,4}\b/.test(t)) || "";
+
+      const parts = [
+        possibleBrand,
+        possibleModel,
+        specificLabels[0] || labels[0] || "item",
+      ].filter(Boolean);
+
+      let merged = parts.join(" ").trim();
+
+      return merged.length > 0 ? merged : "product";
+    }
+
+    const mergedQuery = buildSmartQuery(labels, texts);
     console.log("🔑 Query keyword used:", mergedQuery);
 
     // --- Step 2: Use Custom Search API ---
-    const query = encodeURIComponent(mergedQuery);
-    const searchUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${query}+price`;
+    const query = encodeURIComponent(`${mergedQuery} price`);
+    const searchUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${query}`;
 
     console.log("🌐 Searching web for:", decodeURIComponent(query));
 
@@ -99,39 +129,46 @@ export async function estimatePriceFromImage(imageUrl: string): Promise<{
       return { labels, avgPrice: null, listings: [] };
     }
 
-    // --- Step 3: Extract valid prices and track contributing items ---
-    const itemsWithPrices: { title: string; price: number; url: string }[] = [];
+    // --- Step 3: Extract all valid prices from all matches ---
+    const allPrices: { title: string; price: number; url: string }[] = [];
 
-    const prices: number[] = items
-      .map((item: any) => {
-        const combinedText = `${item.title} ${item.snippet}`;
-        const matches = combinedText.match(/\$\d+(?:\.\d{1,2})?/g);
-        if (matches && matches.length > 0) {
-          const price = parseFloat(matches[0].replace("$", ""));
+    items.forEach((item: any) => {
+      const combinedText = `${item.title} ${item.snippet}`;
+
+      // Updated regex to catch more price formats
+      const matches = combinedText.match(
+        /(?:\$ ?|US\$ ?|USD ?)?\d{1,5}(?:,\d{3})*(?:\.\d{1,2})?(?: ?USD)?/g
+      );
+
+      if (matches) {
+        matches.forEach((match) => {
+          // Remove non-digit/non-dot characters like $ or USD
+          const cleaned = match.replace(/[^\d.]/g, "");
+          const price = parseFloat(cleaned);
           if (!isNaN(price) && price > 1 && price < 10000) {
-            itemsWithPrices.push({ title: item.title, price, url: item.link });
-            return price;
+            allPrices.push({ title: item.title, price, url: item.link });
           }
-        }
-        return null;
-      })
-      .filter((n: number | null): n is number => n !== null); // Type guard
+        });
+      }
+    });
 
-    console.log("💰 Extracted prices:", prices);
-
-    if (prices.length === 0) {
+    if (allPrices.length === 0) {
       console.warn("⚠️ No valid prices found in search results.");
       return { labels, avgPrice: null, listings: [] };
     }
 
-    // --- Step 4: Calculate average ---
-    const avg: number = prices.reduce((acc: number, val: number) => acc + val, 0) / prices.length;
+    // --- Step 4: Sort prices descending and take top 5 ---
+    allPrices.sort((a, b) => b.price - a.price);
+    const topPrices = allPrices.slice(0, 5);
+
+    // --- Step 5: Calculate average from top 5 ---
+    const avg = topPrices.reduce((acc, x) => acc + x.price, 0) / topPrices.length;
     const avgPrice = avg.toFixed(2);
 
-    // --- Step 5: Return top 5 items that contributed to the average ---
-    const topListings = itemsWithPrices.slice(0, 5);
+    // --- Step 6: Return top 5 items ---
+    const topListings = topPrices;
 
-    console.log("✅ Estimated average price:", avgPrice, "Top listings:", topListings);
+    console.log("💰 Top 5 prices:", topListings, "Estimated average:", avgPrice);
 
     return { labels, avgPrice, listings: topListings };
   } catch (error) {
