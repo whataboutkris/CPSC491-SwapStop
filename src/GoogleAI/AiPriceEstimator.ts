@@ -182,7 +182,7 @@ function buildSmartQuery(
     "";
 
   const parts = [brand, model, productType, userTitle]
-    .filter(Boolean)
+    .filter((s): s is string => Boolean(s))
     .map(s => s.trim());
 
   const query = [...new Set(parts)].join(" ");
