@@ -176,7 +176,7 @@ function buildSmartQuery(
 
   const model = texts.find(t => /\b[A-Z0-9-]{3,}\b/.test(t)) || "";
   const productType =
-    (userTitle?.match(/\b(phone|laptop|camera|tv|watch|tablet|console)\b/i)?.[0]) ||
+    (userTitle?.match(/\b(phone|laptop|camera|tv|watch|tablet|console|shoe|shirt|pants|jacket|sweater)\b/i)?.[0]) ||
     objects[0] ||
     filteredLabels[0] ||
     "";
