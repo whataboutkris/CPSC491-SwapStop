@@ -7,6 +7,7 @@ import {
   updateDoc,
   getDoc,
   addDoc,
+  setDoc,
 } from "firebase/firestore";
 import { db, storage } from "../firebase/firebase";
 import ListingForm from "../components/ListingForm";
@@ -277,13 +278,43 @@ export default function ListingsPage() {
 
                 {/* Buttons */}
                 <div className="flex gap-3 mt-4">
+                  {/* BUY button */}
                   <button
-                    onClick={() => navigate("/ShoppingCartPage")}
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      if (!currentUser || !selectedListing) {
+                        alert("You must be logged in to buy an item.");
+                        return;
+                      }
+
+                      try {
+                        const cartRef = doc(db, "users", currentUser.uid, "cart", selectedListing.id);
+                        const existing = await getDoc(cartRef);
+                        if (existing.exists()) {
+                          alert("✅ This item is already in your cart!");
+                        } else {
+                          await setDoc(cartRef, {
+                            id: selectedListing.id,
+                            title: selectedListing.title,
+                            price: parseFloat(selectedListing.price),
+                            image: selectedListing.images?.[0] || "",
+                            description: selectedListing.description || "",
+                          });
+                          alert("🛒 Item added to your cart!");
+                        }
+
+                        navigate("/ShoppingCartPage");
+                      } catch (err) {
+                        console.error("Error adding to cart:", err);
+                        alert("❌ Failed to add item to cart. Please try again.");
+                      }
+                    }}
                     className="bg-green-600 text-white px-4 py-2 rounded-xl hover:bg-green-700 transition font-semibold"
                   >
                     Buy
                   </button>
 
+                  {/* Trade button */}
                   <button
                     onClick={() => setTradeFormVisible((prev) => !prev)}
                     className="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition font-semibold"
@@ -409,7 +440,7 @@ export default function ListingsPage() {
                           ))}
                         </ul>
                       ) : (
-                        <p className="text-gray-500 italic text-center py-4">My price estimator couldn't find prices.</p>
+                        <p className="text-gray-500 italic text-sm">No comparable prices found.</p>
                       )}
                     </div>
                   )}
