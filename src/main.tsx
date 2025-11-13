@@ -14,6 +14,7 @@ import UserPage from "./pages/UserPage";
 import AddListing from "./pages/AddListing";
 import EditProfile from "./pages/EditProfile";
 import ShoppingCartPage from "./pages/ShoppingCartPage";
+import Guide from "./pages/Guide";
 
 
 import "./index.css";
@@ -35,6 +36,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <Route path="/edit-profile" element={<EditProfile />} />
         <Route path="/inbox" element={<InboxPage />} />
         <Route path="/ShoppingCartPage" element={<ShoppingCartPage/>} />
+        <Route path="/Guide" element={<Guide/>} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>

@@ -6,6 +6,8 @@ import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import type { User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/firebase";
+import CartButton from "./CartButton";
+
 
 export default function NavBar() {
   const [user, setUser] = useState<User | null>(null);
@@ -92,9 +94,9 @@ export default function NavBar() {
       <>
         <Link to="/home" className="hover:text-indigo-300 transition-colors">Home</Link>
         <Link to="/listings" className="hover:text-indigo-300 transition-colors">Listings</Link>
-        <Link to="/users" className="hover:text-indigo-300 transition-colors">Users</Link>
         <Link to="/about" className="hover:text-indigo-300 transition-colors">About</Link>
         <Link to="/contact" className="hover:text-indigo-300 transition-colors">Contact</Link>
+        <Link to="/guide" className="hover:text-indigo-300 transition-colors">Guide</Link>
       </>
     ),
     []
@@ -119,6 +121,11 @@ export default function NavBar() {
 
         {/* Desktop actions (≥640px) */}
         <div className="hidden sm:flex gap-4 items-center">
+
+          <Link to="/ShoppingCartPage">
+            <CartButton count={5} />
+          </Link>
+
           {!user ? (
             <>
               <Link to="/register">
@@ -190,6 +197,11 @@ export default function NavBar() {
           {/* Links */}
           <div className="flex flex-col gap-3">
             {NavLinks}
+              <div className="pt-2">
+                <Link to="/ShoppingCartPage">
+                  <CartButton count={5} />
+                </Link>
+            </div>
           </div>
 
           {/* Divider */}

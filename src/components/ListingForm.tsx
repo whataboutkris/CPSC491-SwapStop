@@ -236,6 +236,7 @@ export default function ListingForm({ onSuccess }: ListingFormProps) {
         onChange={(e) => setImages(e.target.files)}
         className="w-full border p-2 rounded"
         accept="image/*"
+        required
       />
 
       <Button
