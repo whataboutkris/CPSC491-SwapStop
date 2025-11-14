@@ -1,164 +1,163 @@
-//Commented out due to outdates tests.
-// import { describe, test, expect, beforeEach, vi } from "vitest";
-// import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-// import { MemoryRouter, Routes, Route } from "react-router-dom";
-// import RegisterPage from "../pages/Register.tsx";
+import { describe, test, expect, beforeEach, vi } from "vitest";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+import RegisterPage from "../pages/Register";
 
-// // ----------------------
-// // Mock Firebase modules
-// // ----------------------
-// vi.mock("../firebase/auth.js", () => ({
-//   registerUser: vi.fn(),
-// }));
+// ----------------------
+// Mock Firebase Auth
+// ----------------------
+const mockRegisterUser = vi.fn((email: string, _password: string) =>
+  Promise.resolve({ uid: "mockUser123", email })
+);
 
-// vi.mock("../firebase/firebase.ts", () => ({
-//   db: {},
-// }));
+vi.mock("../firebase/auth.ts", () => ({
+  registerUser: (email: string, password: string) => mockRegisterUser(email, password),
+}));
 
-// vi.mock("firebase/firestore", () => ({
-//   doc: vi.fn(),
-//   setDoc: vi.fn(),
-// }));
+// ----------------------
+// Mock Firestore
+// ----------------------
+const mockDoc = vi.fn((db: any, collection: string, uid: string) => ({ db, collection, uid }));
+const mockSetDoc = vi.fn((_docRef: any, _data: any) => Promise.resolve());
 
-// import { registerUser } from "../firebase/auth.js";
-// import { setDoc } from "firebase/firestore";
+vi.mock("firebase/firestore", () => ({
+  doc: (db: any, collection: string, uid: string) => mockDoc(db, collection, uid),
+  setDoc: (docRef: any, data: any) => mockSetDoc(docRef, data),
+}));
 
-// // ----------------------
-// // Mock alert
-// // ----------------------
-// const alertMock = vi.fn();
-// vi.stubGlobal("alert", alertMock);
+vi.mock("../firebase/firebase", () => ({
+  db: {},
+}));
 
-// // ----------------------
-// // Helper to render with router
-// // ----------------------
-// function renderWithRouter(ui: React.ReactElement) {
-//   return render(
-//     <MemoryRouter initialEntries={["/register"]}>
-//       <Routes>
-//         <Route path="/register" element={ui} />
-//       </Routes>
-//     </MemoryRouter>
-//   );
-// }
+// ----------------------
+// Mock NavBar
+// ----------------------
+vi.mock("../components/NavBar", () => ({
+  default: () => <nav data-testid="navbar" />,
+}));
 
-// // ----------------------
-// // Tests
-// // ----------------------
-// describe("RegisterPage", () => {
-//   beforeEach(() => {
-//     vi.clearAllMocks();
-//   });
+// ----------------------
+// Mock react-router-dom navigate
+// ----------------------
+export const mockNavigate = vi.fn();
 
-//   test("renders the register form", () => {
-//     renderWithRouter(<RegisterPage />);
+vi.mock("react-router-dom", async () => {
+  const actual: any = await vi.importActual("react-router-dom");
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
 
-//     expect(
-//       screen.getByRole("heading", { name: /create a swapstop account/i })
-//     ).toBeInTheDocument();
-//     expect(screen.getByPlaceholderText(/choose a username/i)).toBeInTheDocument();
-//     expect(screen.getByPlaceholderText(/enter your email/i)).toBeInTheDocument();
-//     expect(screen.getByPlaceholderText(/enter your password/i)).toBeInTheDocument();
-//     expect(screen.getByPlaceholderText(/confirm your password/i)).toBeInTheDocument();
-//   });
+// ----------------------
+// Mock alert
+// ----------------------
+vi.stubGlobal("alert", vi.fn());
 
-//   test("shows alert if passwords do not match", async () => {
-//     renderWithRouter(<RegisterPage />);
+// ----------------------
+// Tests
+// ----------------------
+describe("RegisterPage", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
-//     fireEvent.change(screen.getByPlaceholderText(/choose a username/i), {
-//       target: { value: "kris" },
-//     });
-//     fireEvent.change(screen.getByPlaceholderText(/enter your email/i), {
-//       target: { value: "kris@example.com" },
-//     });
-//     fireEvent.change(screen.getByPlaceholderText(/enter your password/i), {
-//       target: { value: "password123" },
-//     });
-//     fireEvent.change(screen.getByPlaceholderText(/confirm your password/i), {
-//       target: { value: "different123" },
-//     });
+  test("renders navbar and heading", () => {
+    render(
+      <MemoryRouter>
+        <RegisterPage />
+      </MemoryRouter>
+    );
 
-//     fireEvent.submit(screen.getByRole("button", { name: /register/i }));
+    expect(screen.getByTestId("navbar")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Create a SwapStop Account/i })).toBeInTheDocument();
+  });
 
-//     await waitFor(() => {
-//       expect(alertMock).toHaveBeenCalledWith("Passwords do not match!");
-//     });
-//   });
+  test("allows typing in all input fields", () => {
+    render(
+      <MemoryRouter>
+        <RegisterPage />
+      </MemoryRouter>
+    );
 
-//   test("registers user and saves to Firestore", async () => {
-//     // Type-safe Firebase Auth mock
-//     (registerUser as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
-//       uid: "123",
-//       email: "kris@example.com",
-//       emailVerified: false,
-//       isAnonymous: false,
-//       metadata: {} as any,
-//       phoneNumber: null,
-//       providerData: [],
-//       reload: async () => {},
-//       tenantId: null,
-//       delete: async () => {},
-//       refreshToken: "",
-//       toJSON: () => ({}),
-//       getIdToken: async () => "token",
-//       getIdTokenResult: async () => ({ token: "token" }),
-//       displayName: null,
-//       photoURL: null,
-//       providerId: "firebase",
-//     });
+    const usernameInput = screen.getByPlaceholderText(/Choose a username/i);
+    const emailInput = screen.getByPlaceholderText(/Enter your email/i);
+    const passwordInput = screen.getByPlaceholderText(/Enter your password/i);
+    const confirmInput = screen.getByPlaceholderText(/Confirm your password/i);
 
-//     (setDoc as unknown as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+    fireEvent.change(usernameInput, { target: { value: "TestUser" } });
+    fireEvent.change(emailInput, { target: { value: "test@example.com" } });
+    fireEvent.change(passwordInput, { target: { value: "123456" } });
+    fireEvent.change(confirmInput, { target: { value: "123456" } });
 
-//     renderWithRouter(<RegisterPage />);
+    expect(usernameInput).toHaveValue("TestUser");
+    expect(emailInput).toHaveValue("test@example.com");
+    expect(passwordInput).toHaveValue("123456");
+    expect(confirmInput).toHaveValue("123456");
+  });
 
-//     fireEvent.change(screen.getByPlaceholderText(/choose a username/i), {
-//       target: { value: "kris" },
-//     });
-//     fireEvent.change(screen.getByPlaceholderText(/enter your email/i), {
-//       target: { value: "kris@example.com" },
-//     });
-//     fireEvent.change(screen.getByPlaceholderText(/enter your password/i), {
-//       target: { value: "password123" },
-//     });
-//     fireEvent.change(screen.getByPlaceholderText(/confirm your password/i), {
-//       target: { value: "password123" },
-//     });
+  test("alerts if passwords do not match", async () => {
+    render(
+      <MemoryRouter>
+        <RegisterPage />
+      </MemoryRouter>
+    );
 
-//     fireEvent.submit(screen.getByRole("button", { name: /register/i }));
+    fireEvent.change(screen.getByPlaceholderText(/Enter your password/i), { target: { value: "123" } });
+    fireEvent.change(screen.getByPlaceholderText(/Confirm your password/i), { target: { value: "456" } });
 
-//     await waitFor(() => {
-//       expect(registerUser).toHaveBeenCalledWith("kris@example.com", "password123");
-//       expect(setDoc).toHaveBeenCalled();
-//       expect(alertMock).toHaveBeenCalledWith("Account created for kris!");
-//     });
-//   });
+    fireEvent.submit(screen.getByRole("button", { name: /Register/i }).closest("form")!);
 
-//   test("handles Firebase errors gracefully", async () => {
-//     (registerUser as unknown as ReturnType<typeof vi.fn>).mockRejectedValue(
-//       new Error("Firebase error")
-//     );
+    await waitFor(() => {
+      expect(alert).toHaveBeenCalledWith("Passwords do not match!");
+    });
+  });
 
-//     renderWithRouter(<RegisterPage />);
+test("renders headings and description text", () => {
+  render(
+    <MemoryRouter>
+      <RegisterPage />
+    </MemoryRouter>
+  );
 
-//     fireEvent.change(screen.getByPlaceholderText(/choose a username/i), {
-//       target: { value: "kris" },
-//     });
-//     fireEvent.change(screen.getByPlaceholderText(/enter your email/i), {
-//       target: { value: "kris@example.com" },
-//     });
-//     fireEvent.change(screen.getByPlaceholderText(/enter your password/i), {
-//       target: { value: "password123" },
-//     });
-//     fireEvent.change(screen.getByPlaceholderText(/confirm your password/i), {
-//       target: { value: "password123" },
-//     });
+  expect(screen.getByRole("heading", { name: /Create a SwapStop Account/i })).toBeInTheDocument();
+  expect(
+    screen.getByText(/Join SwapStop and start bartering, buying, and selling sustainably/i)
+  ).toBeInTheDocument();
+});
 
-//     fireEvent.submit(screen.getByRole("button", { name: /register/i }));
+test("renders the NavBar component", () => {
+  render(
+    <MemoryRouter>
+      <RegisterPage />
+    </MemoryRouter>
+  );
 
-//     await waitFor(() => {
-//       expect(alertMock).toHaveBeenCalledWith(
-//         "Error creating account: Firebase error"
-//       );
-//     });
-//   });
-// });
+  expect(screen.getByTestId("navbar")).toBeInTheDocument();
+});
+
+test("renders all input placeholders", () => {
+  render(
+    <MemoryRouter>
+      <RegisterPage />
+    </MemoryRouter>
+  );
+
+  expect(screen.getByPlaceholderText(/Choose a username/i)).toBeInTheDocument();
+  expect(screen.getByPlaceholderText(/Enter your email/i)).toBeInTheDocument();
+  expect(screen.getByPlaceholderText(/Enter your password/i)).toBeInTheDocument();
+  expect(screen.getByPlaceholderText(/Confirm your password/i)).toBeInTheDocument();
+});
+
+test("renders login link with correct href", () => {
+  render(
+    <MemoryRouter>
+      <RegisterPage />
+    </MemoryRouter>
+  );
+
+  const loginLink = screen.getByText(/Login/i);
+  expect(loginLink).toBeInTheDocument();
+  expect(loginLink).toHaveAttribute("href", "/login");
+});
+});
