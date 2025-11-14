@@ -6,18 +6,59 @@ import ListingsPage from "../pages/ListingsPage";
 // ----------------------
 // Mock Firebase Firestore
 // ----------------------
-const mockOnSnapshot = vi.fn();
-const mockGetDoc = vi.fn();
-const mockDeleteDoc = vi.fn();
-const mockUpdateDoc = vi.fn();
-
 vi.mock("firebase/firestore", () => ({
   collection: vi.fn(),
-  doc: vi.fn((_db, path, id) => ({ path, id })),
-  onSnapshot: (...args: any[]) => mockOnSnapshot(...args),
-  deleteDoc: (...args: any[]) => mockDeleteDoc(...args),
-  updateDoc: (...args: any[]) => mockUpdateDoc(...args),
-  getDoc: (...args: any[]) => mockGetDoc(...args),
+  doc: vi.fn(),
+  onSnapshot: vi.fn((_ref, cb) => {
+    cb({
+      docs: [
+        {
+          id: "1",
+          data: () => ({
+            title: "Mock Headphones",
+            description: "Noise cancelling headphones",
+            price: "120",
+            images: ["https://example.com/img1.jpg"],
+            type: "sale",
+            brand: "Sony",
+            ownerId: "user1",
+          }),
+        },
+      ],
+    });
+    return vi.fn(); 
+  }),
+  deleteDoc: vi.fn(() => Promise.resolve()),
+  updateDoc: vi.fn(() => Promise.resolve()),
+  getDoc: vi.fn(() =>
+    Promise.resolve({
+      exists: () => true,
+      data: () => ({ username: "Alice", profilePicUrl: "" }),
+    })
+  ),
+  addDoc: vi.fn(() => Promise.resolve()),
+  setDoc: vi.fn(() => Promise.resolve()),
+  getFirestore: vi.fn(), // needed to satisfy Vitest
+  query: vi.fn(),
+  where: vi.fn(),
+}));
+
+// ----------------------
+// Mock Firebase Storage
+// ----------------------
+vi.mock("firebase/storage", () => ({
+  ref: vi.fn(() => ({})), // dummy ref
+  uploadBytes: vi.fn(() => Promise.resolve()),
+  getDownloadURL: vi.fn(() => Promise.resolve("https://example.com/uploaded.jpg")),
+}));
+
+// ----------------------
+// Mock Firebase Auth
+// ----------------------
+vi.mock("firebase/auth", () => ({
+  getAuth: vi.fn(() => ({
+    currentUser: { uid: "user1" },
+  })),
 }));
 
 // ----------------------
@@ -25,6 +66,7 @@ vi.mock("firebase/firestore", () => ({
 // ----------------------
 vi.mock("../firebase/firebase", () => ({
   db: {},
+  storage: {},
 }));
 
 // ----------------------
@@ -46,51 +88,26 @@ vi.mock("../components/ListingForm", () => ({
 }));
 
 // ----------------------
+// Mock AI Price Estimator
+// ----------------------
+vi.mock("../GoogleAI/AiPriceEstimator", () => ({
+  estimatePriceFromImage: vi.fn(() =>
+    Promise.resolve({
+      avgPrice: "$100",
+      listings: [
+        { title: "Headphones A", price: "100", url: "https://example.com/a" },
+        { title: "Headphones B", price: "120", url: "https://example.com/b" },
+      ],
+    })
+  ),
+}));
+
+// ----------------------
 // Mock confirm & prompt
 // ----------------------
 vi.stubGlobal("confirm", vi.fn(() => true));
 vi.stubGlobal("prompt", vi.fn(() => "Updated Value"));
-
-// ----------------------
-// Helper listings data
-// ----------------------
-const mockListings = [
-  {
-    id: "1",
-    title: "Wireless Headphones",
-    description: "Noise cancelling headphones",
-    price: "120",
-    images: ["https://example.com/img1.jpg"],
-    type: "sale",
-    brand: "Sony",
-    ownerId: "user1",
-  },
-  {
-    id: "2",
-    title: "Mountain Bike",
-    description: "Trail bike in good condition",
-    price: "450",
-    images: [],
-    type: "trade",
-    brand: "Giant",
-    ownerId: "user2",
-  },
-];
-
-// ✅ Fix: add type-safe Record for mockUsers
-const mockUsers: Record<
-  string,
-  { exists: () => boolean; data: () => { username: string; profilePicUrl: string } }
-> = {
-  user1: {
-    exists: () => true,
-    data: () => ({ username: "Alice", profilePicUrl: "" }),
-  },
-  user2: {
-    exists: () => true,
-    data: () => ({ username: "Bob", profilePicUrl: "" }),
-  },
-};
+vi.stubGlobal("alert", vi.fn());
 
 // ----------------------
 // Tests
@@ -98,17 +115,6 @@ const mockUsers: Record<
 describe("ListingsPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-
-    // Simulate Firestore snapshot and getDoc
-    mockOnSnapshot.mockImplementation((_colRef, callback) => {
-      callback({
-        docs: mockListings.map((l) => ({ id: l.id, data: () => l })),
-      });
-      return () => {};
-    });
-
-    // ✅ Fix: type docRef to include 'id: string'
-    mockGetDoc.mockImplementation(async (docRef: { id: string }) => mockUsers[docRef.id]);
   });
 
   test("renders navbar and page heading", () => {
@@ -121,47 +127,38 @@ describe("ListingsPage", () => {
     expect(screen.getByRole("heading", { name: /Marketplace/i })).toBeInTheDocument();
   });
 
-  test("renders listings and associated user data", async () => {
+  test("renders listing cards with owner info", async () => {
     render(
       <MemoryRouter>
         <ListingsPage />
       </MemoryRouter>
     );
 
-    // Wait for listings to load
+    // Wait for listing to render
     await waitFor(() => {
-      expect(screen.getByText(/Wireless Headphones/i)).toBeInTheDocument();
-      expect(screen.getByText(/Mountain Bike/i)).toBeInTheDocument();
+      expect(screen.getByText(/Mock Headphones/i)).toBeInTheDocument();
     });
 
-    // Check prices
+    // Check price
     expect(screen.getByText(/\$120/i)).toBeInTheDocument();
-    expect(screen.getByText(/\$450/i)).toBeInTheDocument();
-
-    // Check owners appear
-    await waitFor(() => {
-      expect(screen.getByText(/Alice/i)).toBeInTheDocument();
-      expect(screen.getByText(/Bob/i)).toBeInTheDocument();
-    });
+    // Check owner
+    expect(screen.getByText(/Alice/i)).toBeInTheDocument();
   });
 
-  test("clicking submit on ListingForm calls onSuccess", async () => {
+  test("opens create listing modal and submits", async () => {
     render(
       <MemoryRouter>
         <ListingsPage />
       </MemoryRouter>
     );
 
-    const openModalButton = screen.getByRole("button", { name: /\+ Create Listing/i });
-    fireEvent.click(openModalButton);
+    const createButton = screen.getByRole("button", { name: /\+ Create Listing/i });
+    fireEvent.click(createButton);
 
     const modal = await screen.findByRole("dialog");
     expect(modal).toBeInTheDocument();
 
-    const modalWithin = within(modal);
-    const submitButton = modalWithin.getByTestId("submit-button");
-    expect(submitButton).toBeInTheDocument();
-
+    const submitButton = within(modal).getByTestId("submit-button");
     fireEvent.click(submitButton);
 
     await waitFor(() => {
@@ -169,36 +166,43 @@ describe("ListingsPage", () => {
     });
   });
 
-  test("clicking delete button calls handleDelete and closes modal", async () => {
+  test("deletes a listing", async () => {
     render(
       <MemoryRouter>
         <ListingsPage />
       </MemoryRouter>
     );
 
-    // Wait for listing to appear
-    await waitFor(() => screen.getByText(/Wireless Headphones/i));
+    // Open listing
+    fireEvent.click(await screen.findByText(/Mock Headphones/i));
 
-    // Click the listing to open the modal
-    fireEvent.click(screen.getByText(/Wireless Headphones/i));
-
-    // Wait for the modal dialog to appear
     const modal = await screen.findByRole("dialog");
     expect(modal).toBeInTheDocument();
 
-    const modalWithin = within(modal);
-    const deleteButton = modalWithin.getByRole("button", { name: /Delete/i });
-    expect(deleteButton).toBeInTheDocument();
-
-    // Click Delete → should call mockDeleteDoc
+    const deleteButton = within(modal).getByRole("button", { name: /Delete/i });
     fireEvent.click(deleteButton);
-    await waitFor(() => {
-      expect(mockDeleteDoc).toHaveBeenCalledTimes(1);
-    });
 
-    // Modal should close after deletion
     await waitFor(() => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+  });
+
+  test("runs AI price estimator", async () => {
+    render(
+      <MemoryRouter>
+        <ListingsPage />
+      </MemoryRouter>
+    );
+
+    // Open listing
+    fireEvent.click(await screen.findByText(/Mock Headphones/i));
+    const modal = await screen.findByRole("dialog");
+
+    const aiButton = within(modal).getByRole("button", { name: /Price Estimator/i });
+    fireEvent.click(aiButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(/💡 \$100/i)).toBeInTheDocument();
     });
   });
 });

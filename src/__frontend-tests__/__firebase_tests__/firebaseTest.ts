@@ -16,13 +16,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ✅ Connect to Firestore emulator for tests
+// Connect to Firestore emulator for tests
 if (process.env.NODE_ENV === "test") {
-  console.log("⚡ Connecting Firestore to emulator at localhost:5000q");
+  console.log("⚡ Connecting Firestore to emulator at localhost:5000");
   connectFirestoreEmulator(db, "localhost", 5000);
 }
 
-// ✅ Only initialize App Check in non-test environments
+// Only initialize App Check in non-test environments
 if (process.env.NODE_ENV !== "test" && process.env.VITE_FIREBASE_APPCHECK_DEBUG_TOKEN) {
   initializeAppCheck(app, {
     provider: new ReCaptchaV3Provider("fake-key-for-demo"), // or real key in dev
