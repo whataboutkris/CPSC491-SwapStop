@@ -1,13 +1,30 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from "../firebase/firebase";
+import { getAuth } from "firebase/auth";
 import cartIcon from "../assets/reshot-icon-full-cart-SX5ZWAJ3LC.svg";
 
 interface CartButtonProps {
-  count?: number;
   onClick?: () => void;
   className?: string;
 }
 
-const CartButton: React.FC<CartButtonProps> = ({ count = 0, onClick, className = "" }) => {
+const CartButton: React.FC<CartButtonProps> = ({ onClick, className = "" }) => {
+  const [count, setCount] = useState<number>(0);
+  const auth = getAuth();
+  const currentUser = auth.currentUser;
+
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const cartRef = collection(db, "users", currentUser.uid, "cart");
+    const unsubscribe = onSnapshot(cartRef, (snapshot) => {
+      setCount(snapshot.size); // real number of items in cart
+    });
+
+    return () => unsubscribe();
+  }, [currentUser]);
+
   return (
     <button
       onClick={onClick}
@@ -15,11 +32,7 @@ const CartButton: React.FC<CartButtonProps> = ({ count = 0, onClick, className =
       aria-label="Open cart"
     >
       {/* icon */}
-      <img
-        src={cartIcon}
-        alt="Cart"
-        className="w-7 h-7 drop-shadow-sm"
-      />
+      <img src={cartIcon} alt="Cart" className="w-7 h-7 drop-shadow-sm" />
 
       {/* number Badge */}
       {count > 0 && (
