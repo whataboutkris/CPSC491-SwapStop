@@ -4,15 +4,17 @@ import logo from "../assets/SwapStop-Logo-Transparent.png";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import type { User } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, collection, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import CartButton from "./CartButton";
-
 
 export default function NavBar() {
   const [user, setUser] = useState<User | null>(null);
   const [username, setUsername] = useState<string | undefined>(undefined);
   const [profilePicUrl, setProfilePicUrl] = useState<string | undefined>(undefined);
+
+  const [cartCount, setCartCount] = useState<number>(0);
+
   const [open, setOpen] = useState(false);
 
   const navigate = useNavigate();
@@ -20,10 +22,8 @@ export default function NavBar() {
   const btnRef = useRef<HTMLButtonElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
 
-  // Close the mobile menu after click
   useEffect(() => { setOpen(false); }, [pathname]);
 
-  // Close on ESC and click-away, close keyboard
   useEffect(() => {
     function onKey(e: KeyboardEvent) { if (e.key === "Escape") setOpen(false); }
     function onClickAway(e: MouseEvent) {
@@ -41,19 +41,17 @@ export default function NavBar() {
     };
   }, [open]);
 
-  //freeze page scroll when menu is open
   useEffect(() => {
     if (open) document.body.style.overflow = "hidden";
-    //stop overflow
     else document.body.style.overflow = "";
     return () => { document.body.style.overflow = ""; };
   }, [open]);
 
-  /* Revisit to update profile picture with users image*/
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
+
       if (currentUser) {
         try {
           const userDoc = await getDoc(doc(db, "users", currentUser.uid));
@@ -68,11 +66,21 @@ export default function NavBar() {
         } catch (error) {
           console.error("Failed to fetch user data from Firestore:", error);
         }
+
+    
+        const cartRef = collection(db, "users", currentUser.uid, "cart");
+        const unsubscribeCart = onSnapshot(cartRef, (snapshot) => {
+          setCartCount(snapshot.size);
+        });
+
+        return () => unsubscribeCart();
       } else {
         setUsername(undefined);
         setProfilePicUrl(undefined);
+        setCartCount(0); // reset when logged out
       }
     });
+
     return () => unsubscribe();
   }, []);
 
@@ -105,7 +113,6 @@ export default function NavBar() {
   return (
     <header className="sticky top-0 z-40 w-full bg-[#0F3F8C] text-white shadow-md">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        {/* Logo */}
         <Link to="/" className="flex items-center">
           <img
             src={logo}
@@ -114,16 +121,14 @@ export default function NavBar() {
           />
         </Link>
 
-        {/* Desktop links about? (≥640px) */}
         <div className="hidden sm:flex items-center gap-6 text-lg font-medium">
           {NavLinks}
         </div>
 
-        {/* Desktop actions (≥640px) */}
+        {/* DESKTOP CART BUTTON */}
         <div className="hidden sm:flex gap-4 items-center">
-
           <Link to="/ShoppingCartPage">
-            <CartButton count={5} />
+            <CartButton count={cartCount} />
           </Link>
 
           {!user ? (
@@ -162,7 +167,7 @@ export default function NavBar() {
           )}
         </div>
 
-        {/* Hamburger menu, approx small screens(only <640px) */}
+        {/* MOBILE MENU BUTTON */}
         <button
           ref={btnRef}
           type="button"
@@ -173,12 +178,10 @@ export default function NavBar() {
           className="sm:hidden inline-flex items-center justify-center rounded-lg p-2 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white"
         >
           {open ? (
-            // X close icon
             <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path strokeWidth="2" strokeLinecap="round" d="M6 6l12 12M6 18L18 6" />
             </svg>
           ) : (
-            // hamburger Menu icon
             <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path strokeWidth="2" strokeLinecap="round" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
@@ -186,7 +189,7 @@ export default function NavBar() {
         </button>
       </nav>
 
-      {/* Mobile panel approx size(<640px) */}
+      {/* MOBILE PANEL */}
       <div
         id="mobile-menu"
         ref={panelRef}
@@ -194,20 +197,17 @@ export default function NavBar() {
           ${open ? "max-h-[70vh] opacity-100" : "pointer-events-none max-h-0 opacity-0"}`}
       >
         <div className="px-6 py-4 space-y-4 text-lg font-medium">
-          {/* Links */}
           <div className="flex flex-col gap-3">
             {NavLinks}
-              <div className="pt-2">
-                <Link to="/ShoppingCartPage">
-                  <CartButton count={5} />
-                </Link>
+            <div className="pt-2">
+              <Link to="/ShoppingCartPage">
+                <CartButton count={cartCount} />
+              </Link>
             </div>
           </div>
 
-          {/* Divider */}
           <div className="h-px bg-white/20 my-2" />
 
-          {/* Auth area */}
           {!user ? (
             <div className="flex gap-3">
               <Link className="flex-1" to="/register">
