@@ -10,7 +10,7 @@ interface CartButtonProps {
 }
 
 const CartButton: React.FC<CartButtonProps> = ({ onClick, className = "" }) => {
-  const [count, setCount] = useState<number>(0);
+  const [cartCount, setCartCount] = useState<number>(0);
   const auth = getAuth();
   const currentUser = auth.currentUser;
 
@@ -19,7 +19,7 @@ const CartButton: React.FC<CartButtonProps> = ({ onClick, className = "" }) => {
 
     const cartRef = collection(db, "users", currentUser.uid, "cart");
     const unsubscribe = onSnapshot(cartRef, (snapshot) => {
-      setCount(snapshot.size); // real number of items in cart
+      setCartCount(snapshot.size);
     });
 
     return () => unsubscribe();
@@ -35,9 +35,9 @@ const CartButton: React.FC<CartButtonProps> = ({ onClick, className = "" }) => {
       <img src={cartIcon} alt="Cart" className="w-7 h-7 drop-shadow-sm" />
 
       {/* number Badge */}
-      {count > 0 && (
+      {cartCount > 0 && (
         <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full px-1.5 py-0.5 shadow-md">
-          {count}
+          {cartCount}
         </span>
       )}
     </button>

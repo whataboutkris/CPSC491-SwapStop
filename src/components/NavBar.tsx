@@ -77,7 +77,7 @@ export default function NavBar() {
       } else {
         setUsername(undefined);
         setProfilePicUrl(undefined);
-        setCartCount(0); // reset when logged out
+        setCartCount(0);
       }
     });
 
@@ -128,7 +128,7 @@ export default function NavBar() {
         {/* DESKTOP CART BUTTON */}
         <div className="hidden sm:flex gap-4 items-center">
           <Link to="/ShoppingCartPage">
-            <CartButton count={cartCount} />
+            <CartButton />
           </Link>
 
           {!user ? (
@@ -201,7 +201,7 @@ export default function NavBar() {
             {NavLinks}
             <div className="pt-2">
               <Link to="/ShoppingCartPage">
-                <CartButton count={cartCount} />
+                <CartButton />
               </Link>
             </div>
           </div>
