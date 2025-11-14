@@ -123,7 +123,7 @@ export default function NavBar() {
         <div className="hidden sm:flex gap-4 items-center">
 
           <Link to="/ShoppingCartPage">
-            <CartButton count={5} />
+            <CartButton/>
           </Link>
 
           {!user ? (
@@ -199,7 +199,7 @@ export default function NavBar() {
             {NavLinks}
               <div className="pt-2">
                 <Link to="/ShoppingCartPage">
-                  <CartButton count={5} />
+                 
                 </Link>
             </div>
           </div>
