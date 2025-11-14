@@ -4,7 +4,7 @@ import logo from "../assets/SwapStop-Logo-Transparent.png";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import type { User } from "firebase/auth";
-import { doc, getDoc, collection, onSnapshot } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import CartButton from "./CartButton";
 
@@ -12,8 +12,6 @@ export default function NavBar() {
   const [user, setUser] = useState<User | null>(null);
   const [username, setUsername] = useState<string | undefined>(undefined);
   const [profilePicUrl, setProfilePicUrl] = useState<string | undefined>(undefined);
-
-  const [cartCount, setCartCount] = useState<number>(0);
 
   const [open, setOpen] = useState(false);
 
@@ -66,18 +64,9 @@ export default function NavBar() {
         } catch (error) {
           console.error("Failed to fetch user data from Firestore:", error);
         }
-
-    
-        const cartRef = collection(db, "users", currentUser.uid, "cart");
-        const unsubscribeCart = onSnapshot(cartRef, (snapshot) => {
-          setCartCount(snapshot.size);
-        });
-
-        return () => unsubscribeCart();
       } else {
         setUsername(undefined);
         setProfilePicUrl(undefined);
-        setCartCount(0);
       }
     });
 
