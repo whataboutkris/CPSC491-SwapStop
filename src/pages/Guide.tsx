@@ -99,7 +99,7 @@ export default function Guide() {
             Click on the Price Estimator Tool "Find out what your item is worth!"
             </h3>
             <h3 className= " display-linebreak text-xl font-semibold mt-5 mb-5 text-center" >
-            This gives your the Top 3 Prices that your item is being sold for right now
+            This gives you the Top 3 Prices that the item is being sold for right now
             </h3>
             <h3 className= " display-linebreak text-xl font-semibold mt-5 mb-5 text-center" >
             You can now decide how much you want to post your item for based on the Price Estimator
@@ -114,7 +114,7 @@ export default function Guide() {
             className="w-full rounded-lg border"
           >
             <source
-              src="https://firebasestorage.googleapis.com/v0/b/swapstop-804be.firebasestorage.app/o/guide-videos%2FUseThePriceEstimator.mp4?alt=media&token=35084168-0563-4fa3-bdd1-d4952a3456d9"
+              src="https://firebasestorage.googleapis.com/v0/b/swapstop-804be.firebasestorage.app/o/guide-videos%2FShoppingCart.mp4?alt=media&token=1f586230-fae3-47d4-8702-6c742954def7"
               type="video/mp4"
             />
             Your browser does not support videos.
@@ -126,10 +126,10 @@ export default function Guide() {
             This will show you all the items in your Shopping Cart
             </h3>
             <h3 className= " display-linebreak text-xl font-semibold mt-5 mb-5 text-center" >
-            You can remove items from here or Continue Shipping
+            You can remove items from here or Continue Shopping
             </h3>
             <h3 className= " display-linebreak text-xl font-semibold mt-5 mb-5 text-center" >
-            As you add Items, a number will display for how many items
+            As you add Items, a number will display for how many items are in your cart
             </h3>
            
         </section>
