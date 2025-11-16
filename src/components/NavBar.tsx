@@ -90,7 +90,7 @@ export default function NavBar() {
     () => (
       <>
         <Link to="/home" className="hover:text-indigo-300 transition-colors">Home</Link>
-        <Link to="/listings" className="hover:text-indigo-300 transition-colors">Listings</Link>
+        <Link to="/listings" className="hover:text-indigo-300 transition-colors">Shop</Link>
         <Link to="/about" className="hover:text-indigo-300 transition-colors">About</Link>
         <Link to="/contact" className="hover:text-indigo-300 transition-colors">Contact</Link>
         <Link to="/guide" className="hover:text-indigo-300 transition-colors">Guide</Link>
