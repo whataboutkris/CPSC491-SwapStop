@@ -128,10 +128,11 @@ export default function ListingForm({ onSuccess }: ListingFormProps) {
   };
 
   return (
+
     <form
       data-testid="listing-form"
       onSubmit={handleSubmit}
-      className="bg-white shadow-md rounded-2xl p-6 space-y-4 max-w-lg mx-auto"
+      className= "bg-white shadow-md rounded-2xl p-6 space-y-4 max-w-lg mx-auto "
     >
       <h2 className="text-2xl font-bold mb-4">Create a Listing</h2>
 
