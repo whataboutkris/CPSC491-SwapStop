@@ -236,20 +236,32 @@ export default function ListingsPage() {
 
       {/* Create Listing Modal */}
       <Dialog open={isModalOpen} onClose={() => setIsModalOpen(false)} className="relative z-50">
-        <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          <DialogPanel className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-xl">
-            <DialogTitle className="text-xl font-bold mb-4">Create a New Listing</DialogTitle>
-            <ListingForm onSuccess={() => setIsModalOpen(false)} />
-          </DialogPanel>
+        <div className="fixed inset-0 bg-black/40" aria-hidden="true"/>
+        
+        <div className="fixed inset-0 overflow-y-auto j">
+          
+            <div className= "flex min-h-full items-start sm:items-center p-5 justify-center">
+  
+            <DialogPanel className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-xl relative max-h-[90vh] overflow-y-auto">
+          
+
+              <DialogTitle className="text-xl font-bold mb-4"></DialogTitle>
+              <button
+                  className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 font-bold text-xl"
+                  onClick={() => setIsModalOpen(false)}>
+                  ×
+                </button>
+              <ListingForm onSuccess={() => setIsModalOpen(false)} />
+            </DialogPanel>
+          </div>
         </div>
       </Dialog>
 
       {/* Listing Preview Modal */}
       <Dialog open={!!selectedListing} onClose={() => setSelectedListing(null)} className="relative z-50">
         <div className="fixed inset-0 bg-black/50" aria-hidden="true" />
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          <DialogPanel className="bg-white rounded-2xl p-6 max-w-xl w-full shadow-xl relative">
+        <div className="fixed inset-0 flex items-center justify-center p-2 sm:p-6">
+          <DialogPanel className="bg-white rounded-2xl p-6 max-w-xl mx-auto w-full shadow-xl relative max-h-[90vh] overflow-y-auto">
             {selectedListing && (
               <>
                 <button
@@ -260,13 +272,17 @@ export default function ListingsPage() {
                 </button>
 
                 <DialogTitle className="text-2xl font-bold mb-3">{selectedListing.title}</DialogTitle>
-
-                {selectedListing.images?.length > 0 ? (
-                  <img
-                    src={selectedListing.images[0]}
-                    alt={selectedListing.title}
-                    className="w-full max-h-[500px] object-contain rounded-xl mb-4"
-                  />
+                
+                  {selectedListing.images?.length > 0 ? (
+                    <div className= "mb-4 flex justify-center">
+                      <div className="w-full max-h-[55vh] rounded 2-xl bg-white-100 flex items- center justify-center overflow-hidden">
+                        <img
+                          src={selectedListing.images[0]}
+                          alt={selectedListing.title}
+                          className="max-h-[55vh] w-auto object-contain"
+                        />
+                      </div>
+                    </div>
                 ) : (
                   <div className="h-64 w-full bg-gray-200 rounded-xl mb-4 flex items-center justify-center text-gray-500">
                     No Image Available

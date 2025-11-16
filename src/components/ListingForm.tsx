@@ -5,6 +5,8 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { Button } from "./ui/button";
 import { getAuth } from "firebase/auth";
 import { estimatePriceFromImage } from "../GoogleAI/AiPriceEstimator";
+import CameraCapture from "./CameraCapture";
+
 
 interface ListingFormProps {
   onSuccess?: () => void;
@@ -23,7 +25,7 @@ export default function ListingForm({ onSuccess }: ListingFormProps) {
   const [price, setPrice] = useState("");
   const [type, setType] = useState("sell");
   const [brand, setBrand] = useState("");
-  const [images, setImages] = useState<FileList | null>(null);
+  const [images, setImages] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [estimating, setEstimating] = useState(false);
   const [estimatedPrice, setEstimatedPrice] = useState<string | null>(null);
@@ -39,10 +41,17 @@ export default function ListingForm({ onSuccess }: ListingFormProps) {
       alert("You must be logged in to create a listing.");
       return;
     }
+    
+    if (images.length ===0){
+      alert("Please upload or capture at least one image")
+      return;
+    }
+
     setLoading(true);
 
     try {
       let imageUrls: string[] = [];
+
       if (images && images.length > 0) {
         const uploadPromises = Array.from(images).map(async (image) => {
           const storageRef = ref(
@@ -74,12 +83,13 @@ export default function ListingForm({ onSuccess }: ListingFormProps) {
       setPrice("");
       setType("sell");
       setBrand("");
-      setImages(null);
+      setImages([]);
       setEstimatedPrice(null);
       setConfidence(null);
       setTopResults([]);
 
       const fileInput = document.querySelector<HTMLInputElement>('input[type="file"]');
+      
       if (fileInput) fileInput.value = "";
       if (onSuccess) onSuccess();
     } catch (error) {
@@ -88,8 +98,7 @@ export default function ListingForm({ onSuccess }: ListingFormProps) {
     } finally {
       setLoading(false);
     }
-  };
-
+  }
   // 🔍 AI price estimation
   const handleEstimatePrice = async () => {
     if (!title) {
@@ -127,11 +136,17 @@ export default function ListingForm({ onSuccess }: ListingFormProps) {
     }
   };
 
+  //Camera Preview Controls
+  const handleRemoveImage = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
   return (
+
     <form
       data-testid="listing-form"
       onSubmit={handleSubmit}
-      className="bg-white shadow-md rounded-2xl p-6 space-y-4 max-w-lg mx-auto"
+      className= "bg-white shadow-md rounded-2xl p-6 space-y-4 max-w-lg mx-auto "
     >
       <h2 className="text-2xl font-bold mb-4">Create a Listing</h2>
 
@@ -230,14 +245,67 @@ export default function ListingForm({ onSuccess }: ListingFormProps) {
         className="w-full border p-2 rounded"
       />
 
-      <input
-        type="file"
-        multiple
-        onChange={(e) => setImages(e.target.files)}
-        className="w-full border p-2 rounded"
-        accept="image/*"
-        required
-      />
+     
+  <div className="space-y-2">
+    <label className="block font-semibold text-sm text-gray-700">
+      Upload Images
+    </label>
+    <input
+      type="file"
+      multiple
+      accept="image/*"
+      onChange={(e) => {
+        if (!e.target.files) return;
+        const filesArray = Array.from(e.target.files);
+        setImages((prev) => [...prev, ...filesArray]);
+      }}
+      className="w-full border p-2 rounded"
+    />
+  </div>
+
+      {/*camera stay in app*/}
+      <div className="mt-4 space-y-2">
+        <p className="font-semibold text-sm text-gray-700">Or take a photo</p>
+        <CameraCapture
+          onCapture={(file) => {
+            setImages((prev) => [...prev, file]);
+          }}
+        />
+      </div>
+
+      {/*Image Preview*/}
+
+      {images.length > 0 && (
+  <div className="mt-4">
+    <p className="font-semibold text-sm text-gray-700 mb-2">Preview</p>
+    <div className="flex flex-wrap gap-2 border rounded-lg p-2 max-h-64 overflow-auto">
+      {images.map((file, idx) => {
+        const url = URL.createObjectURL(file);
+        return (
+          <div
+            key={idx}
+            className="relative w-24 h-24 border rounded overflow-hidden"
+          >
+            {/* Remove button */}
+            <button
+              type="button"
+              onClick={() => handleRemoveImage(idx)}
+              className="absolute top-0 right-0 z-10 bg-black/60 text-white text-xs px-1 rounded-bl"
+            >
+              ✕
+            </button>
+
+            <img
+              src={url}
+              alt={`preview-${idx}`}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        );
+      })}
+    </div>
+  </div>
+)}
 
       <Button
         type="submit"
@@ -249,3 +317,4 @@ export default function ListingForm({ onSuccess }: ListingFormProps) {
     </form>
   );
 }
+
