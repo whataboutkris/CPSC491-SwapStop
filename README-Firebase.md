@@ -24,6 +24,10 @@ npm run build
 
 firebase emulators:start --only hosting
 
+OR LOCALLY
+
+firebase hosting:channel:deploy dev
+
 3. Manual Command Deploy to Firebase/Updates Live Site 
 
 Firebase deploy

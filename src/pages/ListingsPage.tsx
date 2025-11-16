@@ -236,13 +236,24 @@ export default function ListingsPage() {
 
       {/* Create Listing Modal */}
       <Dialog open={isModalOpen} onClose={() => setIsModalOpen(false)} className="relative z-50">
-        <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
+        <div className="fixed inset-0 bg-black/40" aria-hidden="true"/>
         
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          <DialogPanel className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-xl">
-            <DialogTitle className="text-xl font-bold mb-4">Create a New Listing</DialogTitle>
-            <ListingForm onSuccess={() => setIsModalOpen(false)} />
-          </DialogPanel>
+        <div className="fixed inset-0 overflow-y-auto j">
+          
+            <div className= "flex min-h-full items-start sm:items-center p-5 justify-center">
+  
+            <DialogPanel className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-xl relative max-h-[90vh] overflow-y-auto">
+          
+
+              <DialogTitle className="text-xl font-bold mb-4"></DialogTitle>
+              <button
+                  className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 font-bold text-xl"
+                  onClick={() => setIsModalOpen(false)}>
+                  ×
+                </button>
+              <ListingForm onSuccess={() => setIsModalOpen(false)} />
+            </DialogPanel>
+          </div>
         </div>
       </Dialog>
 
