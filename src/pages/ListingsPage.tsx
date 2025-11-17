@@ -53,7 +53,6 @@ export default function ListingsPage() {
   const currentUser = auth.currentUser;
   const navigate = useNavigate();
 
-  // Realtime listings listener
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "listings"), (snapshot) => {
       setListings(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Listing[]);
@@ -61,7 +60,6 @@ export default function ListingsPage() {
     return () => unsubscribe();
   }, []);
 
-  // Load owner info
   useEffect(() => {
     listings.forEach(async (listing) => {
       if (listing.ownerId && !ownerMap[listing.ownerId]) {
@@ -82,7 +80,7 @@ export default function ListingsPage() {
     });
   }, [listings, ownerMap]);
 
-  // Delete listing
+
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this listing?")) {
       await deleteDoc(doc(db, "listings", id));
@@ -90,7 +88,7 @@ export default function ListingsPage() {
     }
   };
 
-  // Edit listing
+
   const handleEdit = async () => {
     if (!selectedListing) return;
     const updatedTitle = prompt("Enter new title:", selectedListing.title);
@@ -104,7 +102,7 @@ export default function ListingsPage() {
     }
   };
 
-  // AI Price Estimator
+  
   const handleRunAI = async () => {
     if (!selectedListing || !selectedListing.images?.[0]) return;
     setIsEstimating(true);
@@ -134,7 +132,6 @@ export default function ListingsPage() {
     }
   };
 
-  // Handle Trade Image Upload
   const handleImageUpload = async (file: File) => {
     if (!file) return;
     setUploadingImage(true);
@@ -151,7 +148,6 @@ export default function ListingsPage() {
     }
   };
 
-  // Handle trade submission
   const handleTradeSubmit = async () => {
     if (!selectedListing || !currentUser) return;
     if (!tradeItem.title || !tradeItem.condition) {
@@ -329,6 +325,28 @@ export default function ListingsPage() {
                   >
                     Buy
                   </button>
+
+                  {/* MESSAGE SELLER BUTTON */}
+                  {currentUser?.uid !== selectedListing.ownerId && (
+                    <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!currentUser) {
+                        alert("You must be logged in to message the seller.");
+                        return;
+                      }
+                      const chatId = [currentUser.uid, selectedListing.ownerId].sort().join("_");
+
+                       navigate(`/chat/${chatId}`, {
+                        state: { listing: selectedListing, sellerId: selectedListing.ownerId },
+                      });
+                    }}
+                    className="bg-purple-600 text-white px-4 py-2 rounded-xl hover:bg-purple-700 transition font-semibold"
+                    >
+                      Message Seller
+                      </button>
+                    )}
+                  
 
                   {/* Trade button */}
                   <button
