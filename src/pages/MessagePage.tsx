@@ -1,150 +1,210 @@
-import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState, useRef } from "react";
-import {
-  doc,
-  getDoc,
-  collection,
-  addDoc,
-  query,
-  orderBy,
-  limit,
-  onSnapshot,
-  serverTimestamp,
-} from "firebase/firestore";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { db } from "../firebase/firebase";
+import { collection, addDoc, query, orderBy, onSnapshot, doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
+interface Message {
+  id: string;
+  senderId: string;
+  receiverId: string;
+  text: string;
+  timestamp: any;
+}
+
 export default function MessagePage() {
-  const { receiverId } = useParams<{ receiverId: string }>();
-  const [receiverName, setReceiverName] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(true);
-  const [message, setMessage] = useState<string>("");
-  const [messages, setMessages] = useState<any[]>([]);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [sending, setSending] = useState(false);
+  const { chatId } = useParams<{ chatId: string }>();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { listing } = location.state || {};
 
   const auth = getAuth();
   const currentUser = auth.currentUser;
-  const navigate = useNavigate();
 
-  // Scroll to bottom when new message arrives
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [otherUserId, setOtherUserId] = useState<string>("");
+  const [otherUsername, setOtherUsername] = useState<string>("");
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  // Fetch receiver name
-  useEffect(() => {
-    if (!receiverId) return;
-    const fetchReceiver = async () => {
-      try {
-        const userSnap = await getDoc(doc(db, "users", receiverId));
-        setReceiverName(userSnap.exists() ? userSnap.data().username || "Unknown User" : "User not found");
-      } catch {
-        setReceiverName("Error loading user");
-      } finally {
-        setLoading(false);
+    if (!chatId || !currentUser) return;
+    
+    const fetchOtherUserInfo = async () => {
+      const userIds = chatId.split("_");
+      const otherId = userIds.find(id => id !== currentUser.uid);
+      if (otherId) {
+        setOtherUserId(otherId);
+        
+        try {
+          const userSnap = await getDoc(doc(db, "users", otherId, "public", "info"));
+          if (userSnap.exists()) {
+            setOtherUsername(userSnap.data().username || otherId);
+          } else {
+            setOtherUsername(otherId);
+          }
+        } catch (err) {
+          console.error("Error fetching username:", err);
+          setOtherUsername(otherId);
+        }
       }
     };
-    fetchReceiver();
-  }, [receiverId]);
+    
+    fetchOtherUserInfo();
+  }, [chatId, currentUser]);
 
-  // Listen to messages
   useEffect(() => {
-    if (!currentUser || !receiverId) return;
+    if (!chatId) return;
 
-    const chatId = currentUser.uid < receiverId
-      ? `${currentUser.uid}_${receiverId}`
-      : `${receiverId}_${currentUser.uid}`;
-
-    const messagesRef = collection(db, "messages", chatId, "chats");
-    const q = query(messagesRef, orderBy("timestamp", "asc"), limit(100));
-
+    const q = query(collection(db, "messages", chatId, "chats"), orderBy("timestamp", "asc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      setMessages(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+      const msgs: Message[] = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        senderId: doc.data().senderId,
+        receiverId: doc.data().receiverId,
+        text: doc.data().text,
+        timestamp: doc.data().timestamp,
+      }));
+      setMessages(msgs);
     });
 
     return () => unsubscribe();
-  }, [currentUser, receiverId]);
+  }, [chatId]);
 
-  // Send message
-  const handleSend = async () => {
-    if (!message.trim() || !currentUser || !receiverId) return;
-    setSending(true);
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !currentUser || !chatId || !otherUserId) {
+      console.log("Missing required data:", {
+        message: !!newMessage.trim(),
+        currentUser: !!currentUser,
+        chatId,
+        otherUserId
+      });
+      return;
+    }
 
-    const chatId = currentUser.uid < receiverId
-      ? `${currentUser.uid}_${receiverId}`
-      : `${receiverId}_${currentUser.uid}`;
+    const messageData = {
+      senderId: currentUser.uid,
+      receiverId: otherUserId,
+      text: newMessage.trim(),
+      timestamp: serverTimestamp(),
+    };
 
     try {
-      const messagesRef = collection(db, "messages", chatId, "chats");
-      await addDoc(messagesRef, {
-        senderId: currentUser.uid,
-        receiverId,
-        text: message.trim(),
-        timestamp: serverTimestamp(),
+      console.log("Sending message to chatId:", chatId);
+      console.log("From:", currentUser.uid, "To:", otherUserId);
+      
+      await addDoc(collection(db, "messages", chatId, "chats"), messageData);
+      console.log("✅ Message added to chat");
+
+      await setDoc(doc(db, "users", currentUser.uid, "chats", chatId), {
+        otherUserId: otherUserId,
+        lastMessage: newMessage.trim(),
+        lastUpdated: serverTimestamp(),
       });
-      setMessage("");
+      console.log("✅ Current user chat index updated");
+
+      await setDoc(doc(db, "users", otherUserId, "chats", chatId), {
+        otherUserId: currentUser.uid,
+        lastMessage: newMessage.trim(),
+        lastUpdated: serverTimestamp(),
+      });
+      console.log("✅ Other user chat index updated");
+
+      setNewMessage("");
+      console.log("✅ Message sent successfully!");
     } catch (error) {
-      console.error("Error sending message:", error);
-    } finally {
-      setSending(false);
+      console.error("❌ Error sending message:", error);
+      alert("Failed to send message. Check console for details.");
     }
   };
 
-  if (loading) return <div className="p-8 text-center text-[#FF7900]">Loading chat...</div>;
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-[#00244E] text-[#FF7900] px-4 py-6 flex flex-col items-center">
-      <button
-        onClick={() => navigate("/inbox")}
-        className="mb-4 px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800 transition"
-      >
-        ← Back to Inbox
-      </button>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header with Back button and username */}
+      <div className="p-4 flex items-center justify-between bg-white shadow-sm">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate("/inbox")}
+            className="bg-gray-200 hover:bg-gray-300 px-3 py-1.5 rounded-lg font-semibold"
+          >
+            ← Back to Inbox
+          </button>
+          <h2 className="text-xl font-bold text-gray-800">
+            {otherUsername || "Loading..."}
+          </h2>
+        </div>
+        <button
+          onClick={() => navigate("/listings")}
+          className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg font-semibold"
+        >
+          View Listings
+        </button>
+      </div>
 
-      <h1 className="text-2xl md:text-3xl font-bold mb-4 text-center">{receiverName}</h1>
+      {/* Listing preview - only show if listing data exists */}
+      {listing && (
+        <div className="bg-white shadow-md rounded-xl p-4 mx-4 mt-4 mb-4 flex items-center gap-4">
+          {listing.images && listing.images[0] ? (
+            <img
+              src={listing.images[0]}
+              alt={listing.title}
+              className="w-24 h-24 object-cover rounded-lg"
+            />
+          ) : (
+            <div className="w-24 h-24 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500">
+              No Image
+            </div>
+          )}
+          <div>
+            <h2 className="font-bold text-lg">{listing.title}</h2>
+            <p className="text-gray-600 line-clamp-2">{listing.description}</p>
+            <p className="text-indigo-600 font-semibold mt-1">${listing.price}</p>
+            {listing.type === "trade" && (
+              <span className="text-green-600 text-sm font-medium">Available for Trade</span>
+            )}
+          </div>
+        </div>
+      )}
 
-      <div className="w-full max-w-md flex flex-col bg-[#0F3F8C] rounded-2xl shadow-md p-4 flex-1 overflow-y-auto mb-4">
+      {/* Messages area */}
+      <div className="flex flex-col p-4 gap-2 max-h-[60vh] overflow-y-auto mx-4 mb-4 bg-white rounded-xl shadow-md">
         {messages.length === 0 ? (
-          <p className="text-gray-300 text-center mt-40">No messages yet...</p>
+          <p className="text-gray-500 text-center py-8">No messages yet. Start the conversation!</p>
         ) : (
           messages.map((msg) => (
             <div
               key={msg.id}
-              className={`mb-2 flex ${msg.senderId === currentUser?.uid ? "justify-end" : "justify-start"}`}
+              className={`p-2 rounded-xl max-w-[75%] ${
+                msg.senderId === currentUser?.uid
+                  ? "bg-indigo-600 text-white self-end"
+                  : "bg-gray-200 text-gray-800 self-start"
+              }`}
             >
-              <div
-                className={`px-3 py-2 rounded-2xl max-w-[80%] break-words ${
-                  msg.senderId === currentUser?.uid ? "bg-[#FF7900] text-white rounded-br-none" : "bg-gray-300 text-gray-800 rounded-bl-none"
-                }`}
-              >
-                <p>{msg.text}</p>
-                <span className="text-xs text-gray-600 ml-1">{msg.timestamp?.toDate?.()?.toLocaleTimeString()}</span>
-              </div>
+              {msg.text}
             </div>
           ))
         )}
-        <div ref={messagesEndRef} />
       </div>
 
-      <div className="flex w-full max-w-md gap-2">
-        <textarea
+      {/* Input area */}
+      <div className="flex gap-2 p-4 bg-white shadow-inner mx-4 rounded-xl">
+        <input
+          type="text"
           placeholder="Type a message..."
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && (e.preventDefault(), handleSend())}
-          className="flex-1 p-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF7900] resize-none"
-          rows={2}
-          disabled={sending}
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+          onKeyPress={handleKeyPress}
+          className="flex-1 border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
         <button
-          onClick={handleSend}
-          className="px-4 py-2 bg-[#FF7900] text-white rounded-xl hover:bg-yellow-400 transition disabled:opacity-50"
-          disabled={!message.trim() || sending}
+          onClick={handleSendMessage}
+          className="bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700 font-semibold"
         >
           Send
         </button>

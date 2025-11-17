@@ -16,7 +16,6 @@ import EditProfile from "./pages/EditProfile";
 import ShoppingCartPage from "./pages/ShoppingCartPage";
 import Guide from "./pages/Guide";
 
-
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
@@ -28,15 +27,20 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <Route path="/listings" element={<Listings />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/login" element={<Login/>} />
-        <Route path="/register" element={<Register/>} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/user/:userId" element={<UserPage />} />
-        <Route path="/messages/:receiverId" element={<MessagePage />} />
+
+        <Route path="/chat/:chatId" element={<MessagePage />} />
+
         <Route path="/add-listing" element={<AddListing />} />
         <Route path="/edit-profile" element={<EditProfile />} />
+
+        {/* Inbox */}
         <Route path="/inbox" element={<InboxPage />} />
-        <Route path="/ShoppingCartPage" element={<ShoppingCartPage/>} />
-        <Route path="/Guide" element={<Guide/>} />
+
+        <Route path="/ShoppingCartPage" element={<ShoppingCartPage />} />
+        <Route path="/Guide" element={<Guide />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>

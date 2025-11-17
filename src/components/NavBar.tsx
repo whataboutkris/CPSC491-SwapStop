@@ -94,9 +94,16 @@ export default function NavBar() {
         <Link to="/about" className="hover:text-indigo-300 transition-colors">About</Link>
         <Link to="/contact" className="hover:text-indigo-300 transition-colors">Contact</Link>
         <Link to="/guide" className="hover:text-indigo-300 transition-colors">Guide</Link>
+
+        {/* Inbox link visible only to logged-in users */}
+        {user && (
+          <Link to="/inbox" className="hover:text-indigo-300 transition-colors">
+            Inbox
+          </Link>
+        )}
       </>
     ),
-    []
+    [user]
   );
 
   return (
@@ -229,6 +236,13 @@ export default function NavBar() {
               >
                 Logout
               </Button>
+              {/* Inbox button for mobile */}
+              <Link
+                to="/inbox"
+                className="ml-2 bg-white text-indigo-800 px-3 py-1 rounded hover:bg-gray-100 transition-colors"
+              >
+                Inbox
+              </Link>
             </div>
           )}
         </div>
