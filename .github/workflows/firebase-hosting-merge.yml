@@ -49,6 +49,8 @@ jobs:
       VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
       VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
       VITE_FIREBASE_MEASUREMENT_ID: ${{ secrets.VITE_FIREBASE_MEASUREMENT_ID }}
+      VITE_GOOGLE_API_KEY: ${{ secrets.VITE_GOOGLE_API_KEY }}
+      VITE_GOOGLE_SEARCH_ENGINE_ID: ${{ secrets.VITE_GOOGLE_SEARCH_ENGINE_ID }}
 
     steps:
       - uses: actions/checkout@v4
@@ -62,6 +64,8 @@ jobs:
           echo "VITE_FIREBASE_MESSAGING_SENDER_ID length: ${#VITE_FIREBASE_MESSAGING_SENDER_ID}"
           echo "VITE_FIREBASE_APP_ID length: ${#VITE_FIREBASE_APP_ID}"
           echo "VITE_FIREBASE_MEASUREMENT_ID length: ${#VITE_FIREBASE_MEASUREMENT_ID}"
+          echo "VITE_GOOGLE_API_KEY=${VITE_GOOGLE_API_KEY}" >> .env.production
+          echo "VITE_GOOGLE_SEARCH_ENGINE_ID=${VITE_GOOGLE_SEARCH_ENGINE_ID}" >> .env.production
 
       - name: Create .env.production
         run: |
