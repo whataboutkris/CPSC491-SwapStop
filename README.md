@@ -1,7 +1,7 @@
 # SwapStop
 
 SwapStop is a web application built for the **CPSC 491 Senior Capstone Project** by Juan Cisneroes, Bryant Martinez, and Kristian Losenara.  
-It enables users to swap, share, or trade [items/services — fill in the exact domain] using a **React + TypeScript** frontend with **Firebase** integration for hosting and backend services.
+It enables users to swap, share, or trade [items/services] using a **React + TypeScript** frontend with **Firebase** integration for hosting and backend services.
 
 ---
 
